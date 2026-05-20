@@ -9,8 +9,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "types": ["node"]
+    "resolveJsonModule": true
   },
   "include": ["main.ts", "src/**/*.ts", "tests/**/*.ts"]
 }
