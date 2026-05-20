@@ -31,10 +31,11 @@ describe('composeUrl', () => {
     expect(r.kind).toBe('anonymous')
     if (r.kind === 'anonymous') {
       const m = r.url.match(/source=([^&]+)/)!
-      const decoded = Buffer.from(
-        m[1].replace(/-/g, '+').replace(/_/g, '/'),
-        'base64'
-      ).toString('utf-8')
+      const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/')
+      const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4)
+      const decoded = new TextDecoder().decode(
+        Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
+      )
       expect(decoded).toBe('中文 → flow')
     }
   })
