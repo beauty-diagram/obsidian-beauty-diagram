@@ -1,6 +1,17 @@
 # Alpha validation — 2026-05-21
 
-Plugin at commit `<fill-in>` linked into `~/Documents/bd-test-vault/`. Open Obsidian → open vault → Settings → Community plugins → enable "Beauty Diagram". Then run through each row.
+Plugin at commit `<fill-in>` linked into `~/Documents/bd-test-vault/.obsidian/plugins/beauty-diagram/` via symlink.
+
+**Setup:** the plugin is NOT yet on the Obsidian Community Plugins directory. Local install only.
+
+1. Open Obsidian → "Open another vault" → choose `~/Documents/bd-test-vault/`
+2. Settings → Community plugins → click **"Turn on community plugins"** (older versions: turn off "Restricted mode" / "Safe mode")
+3. Scroll to **"Installed plugins"** section — `Beauty Diagram` appears there automatically (no Browse / search needed)
+4. Toggle it on
+
+**Iteration loop while debugging:** edit source → `npm run build` in the plugin repo → `Cmd+P` → "Reload app without saving" inside Obsidian. The symlink keeps `main.js` in sync.
+
+Then run through each row.
 
 | # | Scenario | Expected | Result | Notes |
 | --- | --- | --- | --- | --- |
