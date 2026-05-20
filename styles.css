@@ -1,0 +1,33 @@
+.bd-block {
+  margin: 1em 0;
+}
+
+.bd-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+
+.bd-error {
+  border: 1px solid var(--background-modifier-error-border, #d44);
+  background: var(--background-modifier-error, rgba(220, 60, 60, 0.06));
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 0.9em;
+}
+
+.bd-error-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.bd-error-message {
+  opacity: 0.85;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+}
+
+.bd-error-actions button {
+  margin-right: 6px;
+}

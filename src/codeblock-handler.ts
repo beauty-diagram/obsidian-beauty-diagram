@@ -1,0 +1,100 @@
+import { MarkdownPostProcessorContext } from 'obsidian'
+import { composeUrl } from './url-composer'
+import { parseDirective } from './directives'
+import { ShareCache } from './share-cache'
+import { ApiClient, ApiError } from './api-client'
+import type { BeautyDiagramSettings } from './settings'
+import type { SourceType } from './types'
+
+export interface HandlerDeps {
+  settings: BeautyDiagramSettings
+  cache: ShareCache
+  api: ApiClient
+  fallback: (source: string, type: SourceType, el: HTMLElement) => Promise<void>
+}
+
+export function makeHandler(type: SourceType, deps: HandlerDeps) {
+  return async (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
+    const { themeOverride, source: cleanSource } = parseDirective(type, source)
+    const theme = themeOverride ?? deps.settings.defaultTheme
+
+    el.empty()
+    el.addClass('bd-block')
+
+    if (!cleanSource.trim()) {
+      el.createDiv({ cls: 'bd-error', text: 'Empty diagram' })
+      return
+    }
+
+    let url: string
+    try {
+      url = await resolveUrl(cleanSource, theme, type, deps)
+    } catch (err) {
+      renderError(el, err, () => deps.fallback(cleanSource, type, el))
+      return
+    }
+
+    const img = el.createEl('img', {
+      attr: {
+        src: url,
+        alt: firstNonEmptyLine(cleanSource),
+        loading: deps.settings.lazyLoadImages ? 'lazy' : 'eager',
+        'data-bd-source-type': type,
+      },
+    })
+    img.addClass('bd-img')
+
+    img.addEventListener('error', () => {
+      const err = new ApiError(0, 'image_load_failed', 'Image failed to load')
+      el.empty()
+      renderError(el, err, () => deps.fallback(cleanSource, type, el))
+    })
+  }
+}
+
+async function resolveUrl(
+  source: string,
+  theme: string,
+  type: SourceType,
+  deps: HandlerDeps
+): Promise<string> {
+  const hasApiKey = !!deps.settings.apiKey
+  const result = composeUrl({
+    source, theme, sourceType: type, hasApiKey,
+    apiBase: deps.settings.apiBase,
+  })
+
+  if (result.kind === 'anonymous') return result.url
+
+  // needs-share
+  if (result.reason === 'over-size-cap' && !hasApiKey) {
+    throw new ApiError(413, 'source_too_large', 'Diagram exceeds 5 KB. Add an API key in plugin settings.')
+  }
+
+  const cached = await deps.cache.get(source, theme, type)
+  if (cached) return `${deps.settings.apiBase}/v1/share/${cached}.svg`
+
+  const share = await deps.api.createShare({ source, theme, sourceType: type })
+  await deps.cache.set(source, theme, type, share.id)
+  return `${deps.settings.apiBase}/v1/share/${share.id}.svg`
+}
+
+function renderError(el: HTMLElement, err: unknown, onFallback: () => Promise<void>) {
+  const box = el.createDiv({ cls: 'bd-error' })
+  box.createEl('div', { cls: 'bd-error-title', text: "Couldn't render this diagram" })
+  const msg = err instanceof ApiError ? err.message : (err as Error).message ?? 'Unknown error'
+  box.createEl('div', { cls: 'bd-error-message', text: msg })
+  const actions = box.createDiv({ cls: 'bd-error-actions' })
+  const fallbackBtn = actions.createEl('button', { text: 'Use built-in renderer' })
+  fallbackBtn.onclick = () => {
+    box.detach()
+    onFallback()
+  }
+}
+
+function firstNonEmptyLine(s: string): string {
+  for (const line of s.split('\n')) {
+    if (line.trim()) return line.trim().slice(0, 80)
+  }
+  return 'Diagram'
+}
