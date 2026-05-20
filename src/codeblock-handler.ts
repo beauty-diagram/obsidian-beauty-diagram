@@ -5,6 +5,7 @@ import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
 import type { BeautyDiagramSettings } from './settings'
 import type { SourceType } from './types'
+import { editorLink } from './editor-link'
 
 export interface HandlerDeps {
   settings: BeautyDiagramSettings
@@ -34,7 +35,17 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
       return
     }
 
-    const img = el.createEl('img', {
+    const link = el.createEl('a', {
+      attr: {
+        href: editorLink({ source: cleanSource, theme, sourceType: type }),
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        'aria-label': 'Open in Beauty Diagram editor',
+      },
+    })
+    link.addClass('bd-link')
+
+    const img = link.createEl('img', {
       attr: {
         src: url,
         alt: firstNonEmptyLine(cleanSource),

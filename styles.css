@@ -31,3 +31,14 @@
 .bd-error-actions button {
   margin-right: 6px;
 }
+
+.bd-link {
+  display: inline-block;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.bd-link:hover .bd-img {
+  filter: brightness(0.97);
+  transition: filter 120ms ease;
+}
