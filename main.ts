@@ -16,6 +16,7 @@ export default class BeautyDiagramPlugin extends Plugin {
   api!: ApiClient
 
   async onload() {
+    console.log('Beauty Diagram plugin loaded')
     this.settings = await loadSettings(this)
     this.cache = new ShareCache({
       maxEntries: Platform.isMobile ? 200 : 1000,
@@ -27,12 +28,24 @@ export default class BeautyDiagramPlugin extends Plugin {
     })
 
     if (this.settings.replaceMermaid) {
-      this.registerMarkdownCodeBlockProcessor('mermaid', makeHandler('mermaid', {
+      const mermaidHandler = makeHandler('mermaid', {
         settings: this.settings,
         cache: this.cache,
         api: this.api,
         fallback: (src, type, el) => fallbackRender(src, type, el),
-      }))
+      })
+
+      this.registerMarkdownPostProcessor(async (el, ctx) => {
+        const codes = Array.from(el.querySelectorAll<HTMLElement>('pre > code.language-mermaid'))
+        for (const code of codes) {
+          const source = code.textContent ?? ''
+          const pre = code.parentElement
+          if (!pre) continue
+          const container = document.createElement('div')
+          pre.replaceWith(container)
+          await mermaidHandler(source, container, ctx)
+        }
+      }, -1)
     }
     if (this.settings.handlePlantuml) {
       this.registerMarkdownCodeBlockProcessor('plantuml', makeHandler('plantuml', {
