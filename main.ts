@@ -36,6 +36,14 @@ export default class BeautyDiagramPlugin extends Plugin {
       })
 
       this.registerMarkdownPostProcessor(async (el, ctx) => {
+        // Diagnostic: what state does the DOM arrive in?
+        const preCodes = el.querySelectorAll('pre > code.language-mermaid').length
+        const mermaidDivs = el.querySelectorAll('.mermaid').length
+        if (preCodes || mermaidDivs) {
+          console.log(`[bd] post-processor: pre>code.language-mermaid=${preCodes}, .mermaid=${mermaidDivs}`)
+        }
+
+        // Path A: catch raw pre>code BEFORE built-in renders
         const codes = Array.from(el.querySelectorAll<HTMLElement>('pre > code.language-mermaid'))
         for (const code of codes) {
           const source = code.textContent ?? ''
@@ -45,7 +53,41 @@ export default class BeautyDiagramPlugin extends Plugin {
           pre.replaceWith(container)
           await mermaidHandler(source, container, ctx)
         }
-      }, -1)
+
+        // Path B: catch .mermaid divs AFTER built-in renders. Source is on data-source if
+        // built-in stores it; otherwise we read the original code text from a sibling attribute.
+        // Obsidian's built-in mermaid keeps the original source on the .mermaid div in some versions.
+        const divs = Array.from(el.querySelectorAll<HTMLElement>('.mermaid'))
+        for (const div of divs) {
+          // Skip if already our handler's output
+          if (div.querySelector('.bd-img') || div.closest('.bd-block')) continue
+
+          // Try multiple ways to recover the source
+          let source =
+            div.getAttribute('data-source') ??
+            (div as any).dataset?.source ??
+            ''
+
+          // Fall back to the textContent of the div if it still contains raw text
+          // (some Obsidian versions leave the source as a child text node)
+          if (!source) {
+            const raw = div.textContent ?? ''
+            // Heuristic: if it starts with a mermaid keyword, treat as source
+            if (/^\s*(flowchart|sequenceDiagram|classDiagram|erDiagram|stateDiagram|gantt|pie|gitGraph|mindmap|xychart|journey|timeline)/i.test(raw)) {
+              source = raw
+            }
+          }
+
+          if (!source) {
+            console.log('[bd] .mermaid div found but source could not be recovered', div)
+            continue
+          }
+
+          const container = document.createElement('div')
+          div.replaceWith(container)
+          await mermaidHandler(source, container, ctx)
+        }
+      }, -10000)
     }
     if (this.settings.handlePlantuml) {
       this.registerMarkdownCodeBlockProcessor('plantuml', makeHandler('plantuml', {
