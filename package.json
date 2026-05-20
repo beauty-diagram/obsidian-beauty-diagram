@@ -1,0 +1,26 @@
+{
+  "name": "obsidian-beauty-diagram",
+  "version": "0.1.0",
+  "description": "Render Mermaid and PlantUML in Obsidian via the Beauty Diagram API.",
+  "main": "main.js",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["obsidian-plugin", "mermaid", "plantuml", "diagram"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.20.0",
+    "fake-indexeddb": "^5.0.2",
+    "jsdom": "^24.0.0",
+    "obsidian": "latest",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

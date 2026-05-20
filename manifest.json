@@ -1,0 +1,11 @@
+{
+  "id": "beauty-diagram",
+  "name": "Beauty Diagram",
+  "version": "0.1.0",
+  "minAppVersion": "1.4.0",
+  "description": "Render Mermaid and PlantUML blocks as deck-quality images via the Beauty Diagram API.",
+  "author": "Beauty Diagram",
+  "authorUrl": "https://www.beauty-diagram.com",
+  "fundingUrl": "https://www.beauty-diagram.com/pricing",
+  "isDesktopOnly": false
+}
