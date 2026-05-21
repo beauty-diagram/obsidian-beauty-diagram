@@ -4,7 +4,7 @@ import { parseDirective } from './directives'
 import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
 import type { BeautyDiagramSettings } from './settings'
-import type { SourceFormat } from './types'
+import type { PageMode, SourceFormat } from './types'
 import { editorLink } from './editor-link'
 
 export interface HandlerDeps {
@@ -18,10 +18,20 @@ export interface HandlerDeps {
 }
 
 export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
-  return async (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
+  return async (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
     const { overrides, source: cleanSource } = parseDirective(sourceFormat, source)
     const theme = overrides.theme ?? deps.settings.defaultTheme
     const bg = overrides.bg === 'transparent' ? 'transparent' as const : undefined
+
+    // Phase 2 of share-mode spec: per-page mode is driven by the document's
+    // YAML front-matter `bd-share: true` marker. Obsidian parses front-matter
+    // for us and exposes it on the post-processor context. Strict equality
+    // mirrors the share-mode pure module's behavior (string "true" / array
+    // [true] / capitalized True all fall back to anonymous).
+    const mode: PageMode =
+      (ctx.frontmatter as Record<string, unknown> | null | undefined)?.['bd-share'] === true
+        ? 'share'
+        : 'anonymous'
 
     el.empty()
     el.addClass('bd-block')
@@ -33,7 +43,7 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
 
     let url: string
     try {
-      url = await resolveUrl(cleanSource, theme, sourceFormat, deps, bg)
+      url = await resolveUrl(cleanSource, theme, sourceFormat, mode, deps, bg)
     } catch (err) {
       renderError(el, err, deps, sourceFormat)
       return
@@ -76,14 +86,10 @@ async function resolveUrl(
   source: string,
   theme: string,
   sourceFormat: SourceFormat,
+  mode: PageMode,
   deps: HandlerDeps,
   bg?: 'transparent'
 ): Promise<string> {
-  // Phase 1 of share-mode spec: keep existing behavior — preview goes through
-  // share path when an API key is configured. Phase 2 will read the page's
-  // frontmatter `bd-share` marker instead, and dropping the implicit
-  // "API key → share" rule is the documented break-change in alpha.4.
-  const mode = deps.settings.apiKey ? 'share' : 'anonymous'
   const result = composeUrl({
     source, theme, sourceFormat, mode,
     apiBase: deps.settings.apiBase,
@@ -92,9 +98,28 @@ async function resolveUrl(
 
   if (result.kind === 'anonymous') return result.url
 
-  // needs-share
+  // needs-share — either explicit share mode (always tries share path)
+  // or over-size-cap (anonymous render impossible regardless of mode).
   if (result.reason === 'over-size-cap' && mode === 'anonymous') {
-    throw new ApiError(413, 'source_too_large', 'Diagram exceeds 5 KB. Add an API key in plugin settings.')
+    throw new ApiError(
+      413,
+      'source_too_large',
+      'Diagram exceeds 5 KB. Enable share mode for this page ' +
+        '("Beauty Diagram: Toggle share mode for this page" command) ' +
+        'or use the inject command to publish a share URL.',
+    )
+  }
+
+  // Share path. Server requires authentication for /v1/share — if the
+  // caller hit share mode without a configured API key, surface a clearer
+  // error than the raw 401 we'd otherwise propagate.
+  if (!deps.settings.apiKey) {
+    throw new ApiError(
+      401,
+      'share_requires_api_key',
+      'Share mode is enabled for this page but no API key is configured. ' +
+        'Add your Beauty Diagram API key in plugin settings.',
+    )
   }
 
   const cached = await deps.cache.get(source, theme, sourceFormat)
