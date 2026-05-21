@@ -30,10 +30,16 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       .addButton((btn) =>
         btn.setButtonText('Verify').onClick(async () => {
           try {
-            await this.plugin.api.getUsage()
-            new Notice('Beauty Diagram: API key verified.')
+            const usage = await this.plugin.api.getUsage()
+            // Successful auth confirms the cache too — invalidate so a freshly
+            // upgraded user doesn't hit a 5-min stale 'free' reading on toggle.
+            this.plugin.usage.invalidate()
+            const plan = usage.plan
+            const q = usage.exports
+            const quotaText = q ? ` · ${q.used}/${q.limit} share quota used this month` : ''
+            new Notice(`Beauty Diagram: verified. Plan: ${plan}${quotaText}`, 8000)
           } catch (err) {
-            new Notice(`Beauty Diagram: Key verification failed (${(err as Error).message})`)
+            new Notice(`Beauty Diagram: Key verification failed (${(err as Error).message})`, 8000)
           }
         })
       )
@@ -83,6 +89,39 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings()
         })
       )
+
+    // —— Share Mode ——
+    containerEl.createEl('h2', { text: 'Share Mode (Pro+)' })
+
+    const shareDesc = containerEl.createDiv({ cls: 'setting-item-description' })
+    shareDesc.style.marginBottom = '0.75em'
+    shareDesc.createSpan({
+      text:
+        'By default every diagram renders via the anonymous endpoint with a watermark. ' +
+        "Pro and Premium users can opt in per page to render without watermark — open the page, " +
+        'then run ',
+    })
+    shareDesc.createEl('code', { text: 'Beauty Diagram: Toggle share mode for this page' })
+    shareDesc.createSpan({
+      text: ' from the Command Palette. The plugin writes ',
+    })
+    shareDesc.createEl('code', { text: 'bd-share: true' })
+    shareDesc.createSpan({
+      text:
+        " into the page's YAML front-matter. First preview of each unique diagram " +
+        'consumes 1 share quota from your plan; subsequent previews hit the local cache for free.',
+    })
+
+    const quotaHint = containerEl.createDiv({ cls: 'setting-item-description' })
+    quotaHint.style.marginBottom = '1em'
+    quotaHint.createSpan({ text: 'Check current quota usage at ' })
+    quotaHint.createEl('a', {
+      text: 'beauty-diagram.com/account/usage',
+      attr: { href: 'https://www.beauty-diagram.com/account/usage', target: '_blank' },
+    })
+    quotaHint.createSpan({ text: ' (or click ' })
+    quotaHint.createEl('strong', { text: 'Verify' })
+    quotaHint.createSpan({ text: ' above to see your plan and current month usage).' })
 
     // —— Source Injection ——
     containerEl.createEl('h2', { text: 'Source Injection' })
