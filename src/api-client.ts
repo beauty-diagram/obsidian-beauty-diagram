@@ -99,7 +99,15 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
   }
 
   return {
-    createShare: (input) => request<ShareResult>('POST', '/v1/share', input),
+    createShare: (input) =>
+      request<ShareResult>('POST', '/v1/share', {
+        source: input.source,
+        theme: input.theme,
+        // Server's /v1/share validator requires `sourceFormat`. Plugin
+        // internals use `sourceType` (matches /v1/beautify.svg query name).
+        // Translate at the wire boundary here, not at every call site.
+        sourceFormat: input.sourceType,
+      }),
     getThemes: async () => {
       const r = await request<{ themes: ThemeInfo[] }>('GET', '/v1/themes')
       return r.themes

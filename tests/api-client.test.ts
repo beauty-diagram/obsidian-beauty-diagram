@@ -45,6 +45,15 @@ describe('api-client', () => {
     // and setting it from JS in some Chromium versions throws.
     expect(req.headers?.['User-Agent']).toBeUndefined()
     expect(req.throw).toBe(false)
+
+    // Wire-level: server expects `sourceFormat`, NOT `sourceType`.
+    const sentBody = JSON.parse(req.body as string)
+    expect(sentBody).toEqual({
+      source: 'A --> B',
+      theme: 'modern',
+      sourceFormat: 'mermaid',
+    })
+    expect(sentBody.sourceType).toBeUndefined()
   })
 
   it('createShare omits auth header when no key', async () => {
