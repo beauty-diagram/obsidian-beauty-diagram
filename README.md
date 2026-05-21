@@ -66,7 +66,7 @@ Every ` ```mermaid ` and ` ```plantuml ` block in **Reading View** is rendered t
 
 ### Per-block theme override
 
-Want Memphis on one block and Modern on the rest? Put a directive on the first line:
+Want Memphis on one block and the default on the rest? Put a directive on the first line:
 
 ```
 \`\`\`mermaid
@@ -78,7 +78,18 @@ flowchart LR
 
 For PlantUML use `' bd:theme=memphis` instead.
 
-The directive is consumed by the plugin and stripped before rendering — it never appears in the output.
+You can stack directives — one per line. `bg=transparent` keeps the diagram's canvas transparent for overlay on colored backgrounds:
+
+```
+\`\`\`mermaid
+%% bd:theme=memphis
+%% bd:bg=transparent
+flowchart LR
+  A --> B
+\`\`\`
+```
+
+Supported keys: `theme` (any of the 9 themes), `bg` (`transparent` only). Directive lines are consumed by the plugin and stripped before rendering.
 
 ### Source injection (portable notes)
 
@@ -91,7 +102,7 @@ Cleanup: **Beauty Diagram: Clean orphan embed URLs in vault** removes injected r
 | Setting | Default | Notes |
 |---|---|---|
 | API key | empty | Optional. Anonymous renders are watermarked and capped at 5 KB per source. Pro/Premium key removes both. Get one at [beauty-diagram.com/account/api-keys](https://www.beauty-diagram.com/account/api-keys). |
-| Default theme | Modern | One of 9. Per-block directive overrides. |
+| Default theme | Classic | One of 9. Per-block directive overrides. |
 | Replace built-in mermaid render | on | Off lets Obsidian render mermaid blocks itself. |
 | Handle plantuml fences | on | Obsidian has no built-in plantuml renderer. |
 | Auto-inject on save | off | When on, every Markdown save runs source injection. |

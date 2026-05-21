@@ -13,7 +13,8 @@ export function composeUrl(opts: ComposeOptions): ComposeResult {
 
   const base = opts.apiBase ?? DEFAULT_API_BASE
   const encoded = base64UrlEncode(opts.source)
-  const url = `${base}/v1/beautify.svg?source=${encoded}&theme=${encodeURIComponent(opts.theme)}&sourceFormat=${opts.sourceFormat}`
+  let url = `${base}/v1/beautify.svg?source=${encoded}&theme=${encodeURIComponent(opts.theme)}&sourceFormat=${opts.sourceFormat}`
+  if (opts.bg === 'transparent') url += '&bg=transparent'
   return { kind: 'anonymous', url }
 }
 

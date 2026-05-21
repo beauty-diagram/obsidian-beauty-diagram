@@ -73,6 +73,33 @@ describe('composeUrl', () => {
     expect(r).toEqual({ kind: 'needs-share', reason: 'over-size-cap' })
   })
 
+  it('appends bg=transparent when bg option is set', () => {
+    const r = composeUrl({
+      source: 'A --> B',
+      theme: 'modern',
+      sourceFormat: 'mermaid',
+      hasApiKey: false,
+      bg: 'transparent',
+    })
+    expect(r.kind).toBe('anonymous')
+    if (r.kind === 'anonymous') {
+      expect(r.url).toContain('&bg=transparent')
+    }
+  })
+
+  it('does not append bg param when bg option is absent', () => {
+    const r = composeUrl({
+      source: 'A --> B',
+      theme: 'modern',
+      sourceFormat: 'mermaid',
+      hasApiKey: false,
+    })
+    expect(r.kind).toBe('anonymous')
+    if (r.kind === 'anonymous') {
+      expect(r.url).not.toContain('bg=')
+    }
+  })
+
   it('honors custom apiBase', () => {
     const r = composeUrl({
       source: 'A --> B',

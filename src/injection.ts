@@ -33,8 +33,8 @@ export async function injectEmbeds(markdown: string, opts: InjectOptions): Promi
   let counter = fences.length
   for (let i = fences.length - 1; i >= 0; i--) {
     const f = fences[i]
-    const { themeOverride, source: cleanSource } = parseDirective(f.type, f.source)
-    const theme = themeOverride ?? opts.theme
+    const { overrides, source: cleanSource } = parseDirective(f.type, f.source)
+    const theme = overrides.theme ?? opts.theme
     const hash = await shortHash(cleanSource + '\0' + theme + '\0' + f.type)
 
     // Look at what immediately follows this fence in the current `out` string.

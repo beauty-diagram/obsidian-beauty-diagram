@@ -29,11 +29,11 @@ describe('editorLink', () => {
   it('encodes plantuml format correctly', () => {
     const url = editorLink({
       source: '@startuml\nA --> B\n@enduml',
-      theme: 'neon',
+      theme: 'memphis',
       sourceFormat: 'plantuml',
     })
     expect(url).toContain('format=plantuml')
-    expect(url).toContain('theme=neon')
+    expect(url).toContain('theme=memphis')
     const m = url.match(/source=([^&]+)/)!
     expect(decodeURIComponent(m[1])).toBe('@startuml\nA --> B\n@enduml')
   })

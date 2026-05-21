@@ -13,7 +13,7 @@ export interface BeautyDiagramSettings {
 export const DEFAULT_SETTINGS: BeautyDiagramSettings = {
   apiKey: '',
   apiBase: 'https://api.beauty-diagram.com',
-  defaultTheme: 'modern',
+  defaultTheme: 'classic',
   replaceMermaid: true,
   handlePlantuml: true,
   lazyLoadImages: true,

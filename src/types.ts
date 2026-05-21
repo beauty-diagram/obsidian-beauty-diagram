@@ -7,6 +7,7 @@ export interface ComposeOptions {
   sourceFormat: SourceFormat
   apiBase?: string
   hasApiKey: boolean
+  bg?: 'transparent'
 }
 
 export type ComposeResult =

@@ -16,8 +16,9 @@ export interface HandlerDeps {
 
 export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
   return async (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
-    const { themeOverride, source: cleanSource } = parseDirective(sourceFormat, source)
-    const theme = themeOverride ?? deps.settings.defaultTheme
+    const { overrides, source: cleanSource } = parseDirective(sourceFormat, source)
+    const theme = overrides.theme ?? deps.settings.defaultTheme
+    const bg = overrides.bg === 'transparent' ? 'transparent' as const : undefined
 
     el.empty()
     el.addClass('bd-block')
@@ -29,7 +30,7 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
 
     let url: string
     try {
-      url = await resolveUrl(cleanSource, theme, sourceFormat, deps)
+      url = await resolveUrl(cleanSource, theme, sourceFormat, deps, bg)
     } catch (err) {
       renderError(el, err, () => deps.fallback(cleanSource, sourceFormat, el))
       return
@@ -72,12 +73,14 @@ async function resolveUrl(
   source: string,
   theme: string,
   sourceFormat: SourceFormat,
-  deps: HandlerDeps
+  deps: HandlerDeps,
+  bg?: 'transparent'
 ): Promise<string> {
   const hasApiKey = !!deps.settings.apiKey
   const result = composeUrl({
     source, theme, sourceFormat, hasApiKey,
     apiBase: deps.settings.apiBase,
+    bg,
   })
 
   if (result.kind === 'anonymous') return result.url
@@ -88,11 +91,15 @@ async function resolveUrl(
   }
 
   const cached = await deps.cache.get(source, theme, sourceFormat)
-  if (cached) return `${deps.settings.apiBase}/v1/share/${cached}.svg`
+  if (cached) {
+    const base = `${deps.settings.apiBase}/v1/share/${cached}.svg`
+    return bg === 'transparent' ? `${base}?bg=transparent` : base
+  }
 
   const share = await deps.api.createShare({ source, theme, sourceFormat })
   await deps.cache.set(source, theme, sourceFormat, share.shareToken)
-  return `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
+  const base = `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
+  return bg === 'transparent' ? `${base}?bg=transparent` : base
 }
 
 function renderError(el: HTMLElement, err: unknown, onFallback: () => Promise<void>) {
