@@ -4,19 +4,19 @@ import { parseDirective } from './directives'
 import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
 import type { BeautyDiagramSettings } from './settings'
-import type { SourceType } from './types'
+import type { SourceFormat } from './types'
 import { editorLink } from './editor-link'
 
 export interface HandlerDeps {
   settings: BeautyDiagramSettings
   cache: ShareCache
   api: ApiClient
-  fallback: (source: string, type: SourceType, el: HTMLElement) => Promise<void>
+  fallback: (source: string, sourceFormat: SourceFormat, el: HTMLElement) => Promise<void>
 }
 
-export function makeHandler(type: SourceType, deps: HandlerDeps) {
+export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
   return async (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
-    const { themeOverride, source: cleanSource } = parseDirective(type, source)
+    const { themeOverride, source: cleanSource } = parseDirective(sourceFormat, source)
     const theme = themeOverride ?? deps.settings.defaultTheme
 
     el.empty()
@@ -29,9 +29,9 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
 
     let url: string
     try {
-      url = await resolveUrl(cleanSource, theme, type, deps)
+      url = await resolveUrl(cleanSource, theme, sourceFormat, deps)
     } catch (err) {
-      renderError(el, err, () => deps.fallback(cleanSource, type, el))
+      renderError(el, err, () => deps.fallback(cleanSource, sourceFormat, el))
       return
     }
 
@@ -40,7 +40,7 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
         src: url,
         alt: firstNonEmptyLine(cleanSource),
         loading: deps.settings.lazyLoadImages ? 'lazy' : 'eager',
-        'data-bd-source-type': type,
+        'data-bd-source-format': sourceFormat,
       },
     })
     img.addClass('bd-img')
@@ -48,7 +48,7 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
     img.addEventListener('error', () => {
       const err = new ApiError(0, 'image_load_failed', 'Image failed to load')
       el.empty()
-      renderError(el, err, () => deps.fallback(cleanSource, type, el))
+      renderError(el, err, () => deps.fallback(cleanSource, sourceFormat, el))
     })
 
     // Sibling overlay badge — sits absolutely over the bottom-right of the
@@ -56,7 +56,7 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
     // image (no misleading "click to edit and sync" affordance).
     const badge = el.createEl('a', {
       attr: {
-        href: editorLink({ source: cleanSource, theme, sourceType: type }),
+        href: editorLink({ source: cleanSource, theme, sourceFormat }),
         target: '_blank',
         rel: 'noopener noreferrer',
         'aria-label':
@@ -71,12 +71,12 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
 async function resolveUrl(
   source: string,
   theme: string,
-  type: SourceType,
+  sourceFormat: SourceFormat,
   deps: HandlerDeps
 ): Promise<string> {
   const hasApiKey = !!deps.settings.apiKey
   const result = composeUrl({
-    source, theme, sourceType: type, hasApiKey,
+    source, theme, sourceFormat, hasApiKey,
     apiBase: deps.settings.apiBase,
   })
 
@@ -87,11 +87,11 @@ async function resolveUrl(
     throw new ApiError(413, 'source_too_large', 'Diagram exceeds 5 KB. Add an API key in plugin settings.')
   }
 
-  const cached = await deps.cache.get(source, theme, type)
+  const cached = await deps.cache.get(source, theme, sourceFormat)
   if (cached) return `${deps.settings.apiBase}/v1/share/${cached}.svg`
 
-  const share = await deps.api.createShare({ source, theme, sourceType: type })
-  await deps.cache.set(source, theme, type, share.id)
+  const share = await deps.api.createShare({ source, theme, sourceFormat })
+  await deps.cache.set(source, theme, sourceFormat, share.id)
   return `${deps.settings.apiBase}/v1/share/${share.id}.svg`
 }
 

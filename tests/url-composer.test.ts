@@ -6,14 +6,14 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: 'flowchart LR\n  A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: false,
     })
     expect(r.kind).toBe('anonymous')
     if (r.kind === 'anonymous') {
       expect(r.url).toMatch(/^https:\/\/api\.beauty-diagram\.com\/v1\/beautify\.svg\?/)
       expect(r.url).toContain('theme=modern')
-      expect(r.url).toContain('sourceType=mermaid')
+      expect(r.url).toContain('sourceFormat=mermaid')
       expect(r.url).toMatch(/source=[A-Za-z0-9_-]+/)
       // base64url-encoded source must have no padding '=' in its value
       const sourceMatch = r.url.match(/source=([^&]*)/)!
@@ -25,7 +25,7 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: '中文 → flow',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: false,
     })
     expect(r.kind).toBe('anonymous')
@@ -44,7 +44,7 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: 'flowchart LR\n  A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: true,
     })
     expect(r).toEqual({ kind: 'needs-share', reason: 'has-api-key' })
@@ -55,7 +55,7 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: big,
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: false,
     })
     expect(r).toEqual({ kind: 'needs-share', reason: 'over-size-cap' })
@@ -67,7 +67,7 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: cjk,
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: false,
     })
     expect(r).toEqual({ kind: 'needs-share', reason: 'over-size-cap' })
@@ -77,7 +77,7 @@ describe('composeUrl', () => {
     const r = composeUrl({
       source: 'A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       hasApiKey: false,
       apiBase: 'http://localhost:8787',
     })

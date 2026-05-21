@@ -1,4 +1,4 @@
-import type { SourceType } from './types'
+import type { SourceFormat } from './types'
 
 let mermaidPromise: Promise<any> | null = null
 
@@ -23,7 +23,7 @@ async function loadMermaid(): Promise<any> {
 
 export async function fallbackRender(
   source: string,
-  type: SourceType,
+  sourceFormat: SourceFormat,
   el: HTMLElement
 ): Promise<void> {
   el.empty()
@@ -32,7 +32,7 @@ export async function fallbackRender(
   banner.style.opacity = '0.7'
   banner.style.marginBottom = '6px'
 
-  if (type === 'plantuml') {
+  if (sourceFormat === 'plantuml') {
     el.createDiv({ cls: 'bd-error', text: 'PlantUML requires the Beauty Diagram service. No local fallback available.' })
     return
   }

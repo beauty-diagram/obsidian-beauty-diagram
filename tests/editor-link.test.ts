@@ -6,7 +6,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: 'flowchart LR\n  A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
     })
     expect(url).toMatch(/^https:\/\/www\.beauty-diagram\.com\/editor\?/)
     expect(url).toContain('format=mermaid')
@@ -19,7 +19,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: 'flowchart LR\n  A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
     })
     const m = url.match(/source=([^&]+)/)!
     // Round-trip via decodeURIComponent should recover the original plaintext.
@@ -30,7 +30,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: '@startuml\nA --> B\n@enduml',
       theme: 'neon',
-      sourceType: 'plantuml',
+      sourceFormat: 'plantuml',
     })
     expect(url).toContain('format=plantuml')
     expect(url).toContain('theme=neon')
@@ -42,7 +42,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: '中文 diagram',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
     })
     const m = url.match(/source=([^&]+)/)!
     expect(decodeURIComponent(m[1])).toBe('中文 diagram')
@@ -52,7 +52,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: 'A --> B',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
       webBase: 'http://localhost:3000',
     })
     expect(url).toMatch(/^http:\/\/localhost:3000\/editor\?/)
@@ -62,7 +62,7 @@ describe('editorLink', () => {
     const url = editorLink({
       source: 'A & B = "ok"',
       theme: 'modern',
-      sourceType: 'mermaid',
+      sourceFormat: 'mermaid',
     })
     // The literal & in the source MUST be encoded so it doesn't break query parsing
     expect(url).not.toMatch(/source=A & B/)

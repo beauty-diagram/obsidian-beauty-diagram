@@ -1,10 +1,10 @@
-export type SourceType = 'mermaid' | 'plantuml'
+export type SourceFormat = 'mermaid' | 'plantuml'
 export type ThemeId = string // not literal-typed; backend can add themes
 
 export interface ComposeOptions {
   source: string
   theme: ThemeId
-  sourceType: SourceType
+  sourceFormat: SourceFormat
   apiBase?: string
   hasApiKey: boolean
 }

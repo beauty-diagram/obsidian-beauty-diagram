@@ -48,7 +48,7 @@ describe('injectEmbeds', () => {
   it('handles plantuml fences', async () => {
     const md = "```plantuml\n@startuml\nA --> B\n@enduml\n```"
     const out = await injectEmbeds(md, opts)
-    expect(out).toContain('sourceType=plantuml')
+    expect(out).toContain('sourceFormat=plantuml')
   })
 
   it('respects per-block theme directive when computing URL', async () => {

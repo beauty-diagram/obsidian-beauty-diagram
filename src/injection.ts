@@ -1,14 +1,14 @@
 import { composeUrl } from './url-composer'
 import { parseDirective } from './directives'
 import { shortHash } from './hash'
-import type { SourceType } from './types'
+import type { SourceFormat } from './types'
 
 interface InjectOptions {
   theme: string
   hasApiKey: boolean
   apiBase?: string
   /** Return cached share id for this source/theme, or null. Plugin wires this. */
-  shareIdForSource: (source: string, theme: string, type: SourceType) => Promise<string | null>
+  shareIdForSource: (source: string, theme: string, sourceFormat: SourceFormat) => Promise<string | null>
 }
 
 // Match fenced code blocks for mermaid/plantuml
@@ -16,13 +16,13 @@ interface InjectOptions {
 const FENCE_RE = /(^|\n)```(mermaid|plantuml)\n([\s\S]*?)\n```/g
 
 export async function injectEmbeds(markdown: string, opts: InjectOptions): Promise<string> {
-  const fences: { startIdx: number; endIdx: number; type: SourceType; source: string }[] = []
+  const fences: { startIdx: number; endIdx: number; type: SourceFormat; source: string }[] = []
   for (const m of markdown.matchAll(FENCE_RE)) {
     const leadOffset = m[1] ? 1 : 0
     fences.push({
       startIdx: m.index! + leadOffset,
       endIdx: m.index! + m[0].length,
-      type: m[2] as SourceType,
+      type: m[2] as SourceFormat,
       source: m[3],
     })
   }
@@ -81,15 +81,15 @@ export async function injectEmbeds(markdown: string, opts: InjectOptions): Promi
 async function urlForSource(
   source: string,
   theme: string,
-  sourceType: SourceType,
+  sourceFormat: SourceFormat,
   opts: InjectOptions
 ): Promise<string> {
-  const cached = await opts.shareIdForSource(source, theme, sourceType)
+  const cached = await opts.shareIdForSource(source, theme, sourceFormat)
   if (cached) {
     const base = opts.apiBase ?? 'https://api.beauty-diagram.com'
     return `${base}/v1/share/${cached}.svg`
   }
-  const r = composeUrl({ source, theme, sourceType, hasApiKey: opts.hasApiKey, apiBase: opts.apiBase })
+  const r = composeUrl({ source, theme, sourceFormat, hasApiKey: opts.hasApiKey, apiBase: opts.apiBase })
   if (r.kind === 'anonymous') return r.url
   // Anonymous over-size path: returns sentinel so caller / <img> error UI can react.
   return '#bd-error-needs-share'

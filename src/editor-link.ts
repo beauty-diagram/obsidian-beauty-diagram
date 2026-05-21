@@ -1,11 +1,11 @@
-import type { SourceType } from './types'
+import type { SourceFormat } from './types'
 
 const DEFAULT_WEB_BASE = 'https://www.beauty-diagram.com'
 
 export interface EditorLinkOptions {
   source: string
   theme: string
-  sourceType: SourceType
+  sourceFormat: SourceFormat
   webBase?: string
 }
 
@@ -20,7 +20,7 @@ export interface EditorLinkOptions {
 export function editorLink(opts: EditorLinkOptions): string {
   const base = opts.webBase ?? DEFAULT_WEB_BASE
   const source = encodeURIComponent(opts.source)
-  const format = encodeURIComponent(opts.sourceType)
+  const format = encodeURIComponent(opts.sourceFormat)
   const theme = encodeURIComponent(opts.theme)
   return `${base}/editor?source=${source}&format=${format}&theme=${theme}`
 }

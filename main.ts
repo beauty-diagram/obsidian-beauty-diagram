@@ -6,7 +6,7 @@ import { createApiClient, ApiClient } from './src/api-client'
 import { makeHandler } from './src/codeblock-handler'
 import { fallbackRender } from './src/fallback-renderer'
 import { injectEmbeds, cleanEmbeds } from './src/injection'
-import type { SourceType } from './src/types'
+import type { SourceFormat } from './src/types'
 
 const PLUGIN_VERSION = '0.1.0'
 
@@ -32,7 +32,7 @@ export default class BeautyDiagramPlugin extends Plugin {
         settings: this.settings,
         cache: this.cache,
         api: this.api,
-        fallback: (src, type, el) => fallbackRender(src, type, el),
+        fallback: (src, sourceFormat, el) => fallbackRender(src, sourceFormat, el),
       })
 
       this.registerMarkdownPostProcessor(async (el, ctx) => {
@@ -94,7 +94,7 @@ export default class BeautyDiagramPlugin extends Plugin {
         settings: this.settings,
         cache: this.cache,
         api: this.api,
-        fallback: (src, type, el) => fallbackRender(src, type, el),
+        fallback: (src, sourceFormat, el) => fallbackRender(src, sourceFormat, el),
       }))
     }
 
@@ -184,13 +184,13 @@ export default class BeautyDiagramPlugin extends Plugin {
       theme: this.settings.defaultTheme,
       hasApiKey: !!this.settings.apiKey,
       apiBase: this.settings.apiBase,
-      shareIdForSource: async (src, theme, type: SourceType) => {
-        const cached = await this.cache.get(src, theme, type)
+      shareIdForSource: async (src, theme, sourceFormat: SourceFormat) => {
+        const cached = await this.cache.get(src, theme, sourceFormat)
         if (cached) return cached
         if (!this.settings.apiKey) return null
         try {
-          const share = await this.api.createShare({ source: src, theme, sourceType: type })
-          await this.cache.set(src, theme, type, share.id)
+          const share = await this.api.createShare({ source: src, theme, sourceFormat })
+          await this.cache.set(src, theme, sourceFormat, share.id)
           return share.id
         } catch {
           return null

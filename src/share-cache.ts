@@ -1,5 +1,5 @@
 import { shortHash } from './hash'
-import type { SourceType } from './types'
+import type { SourceFormat } from './types'
 
 interface CacheRow {
   key: string
@@ -44,17 +44,17 @@ export class ShareCache {
     return this.dbPromise
   }
 
-  private async makeKey(source: string, theme: string, type: SourceType): Promise<string> {
+  private async makeKey(source: string, theme: string, sourceFormat: SourceFormat): Promise<string> {
     // 16 hex chars (~64 bits) — collision space is plenty for plugin-local cache.
     return (
-      (await shortHash(source + '\0' + theme + '\0' + type)) +
-      (await shortHash('\x01' + source + theme + type))
+      (await shortHash(source + '\0' + theme + '\0' + sourceFormat)) +
+      (await shortHash('\x01' + source + theme + sourceFormat))
     )
   }
 
-  async get(source: string, theme: string, type: SourceType): Promise<string | null> {
+  async get(source: string, theme: string, sourceFormat: SourceFormat): Promise<string | null> {
     const db = await this.db()
-    const key = await this.makeKey(source, theme, type)
+    const key = await this.makeKey(source, theme, sourceFormat)
     return new Promise((resolve, reject) => {
       const tx = db.transaction('share-cache', 'readonly')
       const req = tx.objectStore('share-cache').get(key)
@@ -68,9 +68,9 @@ export class ShareCache {
     })
   }
 
-  async set(source: string, theme: string, type: SourceType, id: string): Promise<void> {
+  async set(source: string, theme: string, sourceFormat: SourceFormat, id: string): Promise<void> {
     const db = await this.db()
-    const key = await this.makeKey(source, theme, type)
+    const key = await this.makeKey(source, theme, sourceFormat)
     const now = Date.now()
     const row: CacheRow = { key, id, createdAt: now, expiresAt: now + this.ttlMs }
     await new Promise<void>((resolve, reject) => {

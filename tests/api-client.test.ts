@@ -32,7 +32,7 @@ describe('api-client', () => {
       version: '0.1.0',
       requestFn,
     })
-    const r = await client.createShare({ source: 'A --> B', theme: 'modern', sourceType: 'mermaid' })
+    const r = await client.createShare({ source: 'A --> B', theme: 'modern', sourceFormat: 'mermaid' })
 
     expect(r).toEqual({ id: 'abc123', url: 'https://www.beauty-diagram.com/s/abc123' })
     expect(requestFn).toHaveBeenCalledOnce()
@@ -46,14 +46,13 @@ describe('api-client', () => {
     expect(req.headers?.['User-Agent']).toBeUndefined()
     expect(req.throw).toBe(false)
 
-    // Wire-level: server expects `sourceFormat`, NOT `sourceType`.
+    // Wire-level: body is passed through directly — field names must match server contract.
     const sentBody = JSON.parse(req.body as string)
     expect(sentBody).toEqual({
       source: 'A --> B',
       theme: 'modern',
       sourceFormat: 'mermaid',
     })
-    expect(sentBody.sourceType).toBeUndefined()
   })
 
   it('createShare omits auth header when no key', async () => {
@@ -67,7 +66,7 @@ describe('api-client', () => {
       version: '0.1.0',
       requestFn,
     })
-    await client.createShare({ source: 'A', theme: 'modern', sourceType: 'mermaid' })
+    await client.createShare({ source: 'A', theme: 'modern', sourceFormat: 'mermaid' })
 
     const req = requestFn.mock.calls[0][0]
     expect(req.headers?.Authorization).toBeUndefined()
@@ -88,7 +87,7 @@ describe('api-client', () => {
       requestFn,
     })
     await expect(
-      client.createShare({ source: 'A', theme: 'modern', sourceType: 'mermaid' })
+      client.createShare({ source: 'A', theme: 'modern', sourceFormat: 'mermaid' })
     ).rejects.toMatchObject({ status: 429, code: 'quota_exhausted' })
   })
 
