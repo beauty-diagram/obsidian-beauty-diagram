@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.8 — 2026-05-21
+
+### Fixes
+
+- **handler**: lazy-resolve api client to avoid stale credentials
+
 ## 0.1.0-alpha.7 — 2026-05-21
 
 ### Fixes
