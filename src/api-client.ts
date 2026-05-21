@@ -39,6 +39,37 @@ export interface ThemeInfo {
   tier: string
 }
 
+/**
+ * Server response from GET /v1/usage. Includes the user's plan tier and
+ * monthly export / AI quota. Used by:
+ *   - UsageCache (toggle command's plan gating)
+ *   - Verify API key command (display plan + quota in success notice)
+ *   - Settings tab quota hint
+ *
+ * The shape is intentionally loose on `plan` (string, not literal union)
+ * so the plugin doesn't crash when the server introduces a new tier.
+ * UsageCache narrows it to a known set; unknown plans degrade to
+ * 'unknown' (which the toggle command treats like 'free').
+ */
+export interface UsageResponse {
+  ok: boolean
+  /** 'free' | 'pro' | 'premium' today; loose for forward compatibility. */
+  plan: string
+  actor?: string
+  exports?: {
+    plan?: string
+    used: number
+    limit: number
+    resetsAt: string
+  }
+  ai?: {
+    enabled?: boolean
+    used: number
+    limit: number
+    resetsAt: string
+  }
+}
+
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string) {
     super(message)
@@ -48,7 +79,7 @@ export class ApiError extends Error {
 export interface ApiClient {
   createShare(input: ShareInput): Promise<ShareResult>
   getThemes(): Promise<ThemeInfo[]>
-  getUsage(): Promise<unknown>
+  getUsage(): Promise<UsageResponse>
 }
 
 export function createApiClient(opts: ApiClientOptions): ApiClient {
@@ -113,6 +144,6 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
       const r = await request<{ themes: ThemeInfo[] }>('GET', '/v1/themes')
       return r.themes
     },
-    getUsage: () => request<unknown>('GET', '/v1/usage'),
+    getUsage: () => request<UsageResponse>('GET', '/v1/usage'),
   }
 }
