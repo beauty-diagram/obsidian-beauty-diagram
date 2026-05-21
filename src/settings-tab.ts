@@ -36,7 +36,14 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
             this.plugin.usage.invalidate()
             const plan = usage.plan
             const q = usage.exports
-            const quotaText = q ? ` · ${q.used}/${q.limit} share quota used this month` : ''
+            // Premium plans return limit: null (no cap). Show "unlimited"
+            // rather than the literal null, otherwise the notice reads
+            // "54/null share quota used this month".
+            const quotaText = q
+              ? q.limit == null
+                ? ` · ${q.used} share renders this month (unlimited)`
+                : ` · ${q.used}/${q.limit} share quota used this month`
+              : ''
             new Notice(`Beauty Diagram: verified. Plan: ${plan}${quotaText}`, 8000)
           } catch (err) {
             new Notice(`Beauty Diagram: Key verification failed (${(err as Error).message})`, 8000)

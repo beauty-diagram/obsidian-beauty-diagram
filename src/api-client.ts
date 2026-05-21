@@ -59,13 +59,15 @@ export interface UsageResponse {
   exports?: {
     plan?: string
     used: number
-    limit: number
+    /** null on Premium (unlimited). Free / Pro return a numeric cap. */
+    limit: number | null
     resetsAt: string
   }
   ai?: {
     enabled?: boolean
     used: number
-    limit: number
+    /** null on Premium (unlimited). */
+    limit: number | null
     resetsAt: string
   }
 }
