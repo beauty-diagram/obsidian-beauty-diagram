@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.7 — 2026-05-21
+
+### Fixes
+
+- **verify**: show "unlimited" for Premium plan share quota
+
 ## 0.1.0-alpha.6 — 2026-05-21
 
 ### Features
