@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.0-alpha.4 — 2026-05-21
+
+### Features
+
+- **settings-tab**: share mode section + plan+quota in Verify notice
+- **command**: toggle share mode for this page (with plan gating)
+- **handler**: drive share path from page frontmatter bd-share
+- **usage-cache**: 5-min cache for /v1/usage + typed UsageResponse
+- **share-mode**: pure module for front-matter bd-share marker
+
+### Refactors
+
+- **url-composer**: replace hasApiKey with explicit PageMode
+
+### Docs
+
+- **readme**: share mode section + alpha.3 → alpha.4 migration callout
+- **changelog**: backfill 3 tag sections (0.1.0-alpha → alpha.3)
+
+### Chores
+
+- **changelog**: escape literal \<img\>/\<svg\> tags in generated CHANGELOG
+- auto-generate CHANGELOG.md from conventional commits on npm version
+
 All notable changes are documented here. Generated from conventional
 commits via `scripts/update-changelog.mjs` on each `npm version` bump.
 
