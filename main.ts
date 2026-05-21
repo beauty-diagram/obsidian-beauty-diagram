@@ -4,7 +4,6 @@ import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
 import { createApiClient, ApiClient } from './src/api-client'
 import { makeHandler } from './src/codeblock-handler'
-import { fallbackRender } from './src/fallback-renderer'
 import { injectEmbeds, cleanEmbeds } from './src/injection'
 import type { SourceFormat } from './src/types'
 
@@ -16,7 +15,6 @@ export default class BeautyDiagramPlugin extends Plugin {
   api!: ApiClient
 
   async onload() {
-    console.log('Beauty Diagram plugin loaded')
     this.settings = await loadSettings(this)
     this.cache = new ShareCache({
       maxEntries: Platform.isMobile ? 200 : 1000,
@@ -27,22 +25,26 @@ export default class BeautyDiagramPlugin extends Plugin {
       version: PLUGIN_VERSION,
     })
 
+    const disableForFormat = async (sourceFormat: SourceFormat) => {
+      if (sourceFormat === 'mermaid') {
+        this.settings.replaceMermaid = false
+      } else {
+        this.settings.handlePlantuml = false
+      }
+      await this.saveSettings()
+      new Notice(
+        'Beauty Diagram disabled for ' + sourceFormat +
+        " blocks. Reload Obsidian (Cmd+P → 'Reload app without saving') to switch to the built-in renderer.",
+        8000,
+      )
+    }
+
+    const handlerDeps = { settings: this.settings, cache: this.cache, api: this.api, disableForFormat }
+
     if (this.settings.replaceMermaid) {
-      const mermaidHandler = makeHandler('mermaid', {
-        settings: this.settings,
-        cache: this.cache,
-        api: this.api,
-        fallback: (src, sourceFormat, el) => fallbackRender(src, sourceFormat, el),
-      })
+      const mermaidHandler = makeHandler('mermaid', handlerDeps)
 
       this.registerMarkdownPostProcessor(async (el, ctx) => {
-        // Diagnostic: what state does the DOM arrive in?
-        const preCodes = el.querySelectorAll('pre > code.language-mermaid').length
-        const mermaidDivs = el.querySelectorAll('.mermaid').length
-        if (preCodes || mermaidDivs) {
-          console.log(`[bd] post-processor: pre>code.language-mermaid=${preCodes}, .mermaid=${mermaidDivs}`)
-        }
-
         // Path A: catch raw pre>code BEFORE built-in renders
         const codes = Array.from(el.querySelectorAll<HTMLElement>('pre > code.language-mermaid'))
         for (const code of codes) {
@@ -78,10 +80,7 @@ export default class BeautyDiagramPlugin extends Plugin {
             }
           }
 
-          if (!source) {
-            console.log('[bd] .mermaid div found but source could not be recovered', div)
-            continue
-          }
+          if (!source) continue
 
           const container = document.createElement('div')
           div.replaceWith(container)
@@ -90,12 +89,7 @@ export default class BeautyDiagramPlugin extends Plugin {
       }, -10000)
     }
     if (this.settings.handlePlantuml) {
-      this.registerMarkdownCodeBlockProcessor('plantuml', makeHandler('plantuml', {
-        settings: this.settings,
-        cache: this.cache,
-        api: this.api,
-        fallback: (src, sourceFormat, el) => fallbackRender(src, sourceFormat, el),
-      }))
+      this.registerMarkdownCodeBlockProcessor('plantuml', makeHandler('plantuml', handlerDeps))
     }
 
     this.addSettingTab(new BeautyDiagramSettingTab(this.app, this))

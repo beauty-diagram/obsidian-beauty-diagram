@@ -11,7 +11,10 @@ export interface HandlerDeps {
   settings: BeautyDiagramSettings
   cache: ShareCache
   api: ApiClient
-  fallback: (source: string, sourceFormat: SourceFormat, el: HTMLElement) => Promise<void>
+  /** Called when user clicks "Use built-in renderer" in the error UI.
+   *  Should toggle off the relevant render-replacement setting and
+   *  show a Notice prompting the user to reload Obsidian. */
+  disableForFormat: (sourceFormat: SourceFormat) => Promise<void>
 }
 
 export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
@@ -32,7 +35,7 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
     try {
       url = await resolveUrl(cleanSource, theme, sourceFormat, deps, bg)
     } catch (err) {
-      renderError(el, err, () => deps.fallback(cleanSource, sourceFormat, el))
+      renderError(el, err, deps, sourceFormat)
       return
     }
 
@@ -49,7 +52,7 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
     img.addEventListener('error', () => {
       const err = new ApiError(0, 'image_load_failed', 'Image failed to load')
       el.empty()
-      renderError(el, err, () => deps.fallback(cleanSource, sourceFormat, el))
+      renderError(el, err, deps, sourceFormat)
     })
 
     // Sibling overlay badge — sits absolutely over the bottom-right of the
@@ -102,16 +105,21 @@ async function resolveUrl(
   return bg === 'transparent' ? `${base}?bg=transparent` : base
 }
 
-function renderError(el: HTMLElement, err: unknown, onFallback: () => Promise<void>) {
+function renderError(el: HTMLElement, err: unknown, deps: HandlerDeps, sourceFormat: SourceFormat) {
   const box = el.createDiv({ cls: 'bd-error' })
   box.createEl('div', { cls: 'bd-error-title', text: "Couldn't render this diagram" })
   const msg = err instanceof ApiError ? err.message : (err as Error).message ?? 'Unknown error'
   box.createEl('div', { cls: 'bd-error-message', text: msg })
+  box.createEl('div', {
+    cls: 'bd-error-hint',
+    text: sourceFormat === 'plantuml'
+      ? 'PlantUML rendering requires the Beauty Diagram service. Try again when network is restored.'
+      : 'Click below to disable Beauty Diagram for mermaid blocks and let Obsidian render them itself. Re-enable any time in plugin settings.',
+  })
   const actions = box.createDiv({ cls: 'bd-error-actions' })
-  const fallbackBtn = actions.createEl('button', { text: 'Use built-in renderer' })
-  fallbackBtn.onclick = () => {
-    box.detach()
-    onFallback()
+  if (sourceFormat === 'mermaid') {
+    const btn = actions.createEl('button', { text: "Use Obsidian's built-in renderer" })
+    btn.onclick = () => { deps.disableForFormat('mermaid') }
   }
 }
 

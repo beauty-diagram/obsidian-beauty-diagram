@@ -20,7 +20,7 @@ The same `flowchart LR` source, three different themes — rendered live by [Bea
 - **Per-block theme override** with a one-line directive. Mix themes in the same note.
 - **Idempotent source injection** for portable notes — published notes carry plain `<img>` references that render anywhere (GitHub, Notion paste, blog static sites).
 - **PlantUML supported** too, with the same theming pipeline. No local Java required.
-- **Offline-tolerant** — Mermaid blocks fall back to a local renderer if the Beauty Diagram service is unreachable.
+- **Honest error handling** — if the Beauty Diagram service is unreachable, the error UI lets you one-click disable the plugin for mermaid blocks and revert to Obsidian's built-in renderer.
 
 ## Theme gallery
 
@@ -133,13 +133,26 @@ A: Yes. The plugin uses Obsidian's `requestUrl` API which works on iOS / Android
 A: Hover any rendered diagram — a small **↗ Open in editor** badge appears in the bottom-right corner. Click it to open the [Beauty Diagram editor](https://www.beauty-diagram.com/editor) with the source prefilled. Edits there don't sync back to your Obsidian note — use Obsidian's source mode for that.
 
 **Q: I see "Couldn't render this diagram".**
-A: Common causes: source > 5 KB without an API key, or your network is blocking `api.beauty-diagram.com`. Click "Use built-in renderer" in the error UI to fall back to Obsidian's built-in for mermaid blocks.
+A: Common causes: source > 5 KB without an API key, or your network is blocking `api.beauty-diagram.com`. For mermaid blocks, click "Use Obsidian's built-in renderer" in the error UI to disable Beauty Diagram for mermaid and let Obsidian render them itself. PlantUML has no built-in fallback — re-enable network access or restore connectivity.
 
 ## Privacy
 
-- Anonymous render path: your source is base64url-encoded into the URL query string. The Beauty Diagram API receives the source to render but does not persist it.
-- With API key: source is saved to your account (see [privacy policy](https://www.beauty-diagram.com/privacy)).
-- The plugin sends `X-Bd-Client: obsidian` to help us see which clients are healthy in aggregate. No personal data, no telemetry beyond standard request logs.
+**This plugin makes HTTP requests to `api.beauty-diagram.com` by default** to render diagrams. Disclosure:
+
+- **Anonymous render**: every ` ```mermaid ` / ` ```plantuml ` block in Reading View triggers a GET to `/v1/beautify.svg` with the block's source base64url-encoded into the URL query string. The server uses the source to render the SVG and does **not** persist it.
+- **With API key**: when you add a Pro/Premium key (optional, default off), source > 5 KB or anonymous-disallowed requests are sent via POST to `/v1/share`. The server saves these to your Beauty Diagram account so they can be served as embed URLs (see [privacy policy](https://www.beauty-diagram.com/privacy)).
+- **Analytics**: the plugin sends an `X-Bd-Client: obsidian` request header so we can see in aggregate which clients are healthy. No personal data, no telemetry endpoints beyond standard request logs.
+
+### Opt-out
+
+Two levels of opt-out:
+
+1. **Disable the plugin entirely** — Settings → Community plugins → toggle Beauty Diagram off. Obsidian's built-in mermaid renders blocks; plantuml fences stay as plain text. Zero network requests.
+2. **Disable per source format** — Settings → Beauty Diagram → toggle "Replace built-in mermaid render" or "Handle plantuml fences" off. Affected blocks fall back to Obsidian default (mermaid) or plain text (plantuml). No network requests for the disabled format.
+
+### Self-host
+
+If you run your own Beauty Diagram server (the project is self-hostable), set Settings → Beauty Diagram → Advanced → API base URL to your instance. The plugin will hit only that origin, never the hosted SaaS.
 
 ## License
 
