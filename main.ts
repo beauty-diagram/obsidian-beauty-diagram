@@ -1,4 +1,4 @@
-import { Editor, Notice, Platform, Plugin, TFile } from 'obsidian'
+import { Notice, Platform, Plugin, TFile } from 'obsidian'
 import { BeautyDiagramSettings, DEFAULT_SETTINGS, loadSettings, saveSettings } from './src/settings'
 import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
@@ -116,7 +116,18 @@ export default class BeautyDiagramPlugin extends Plugin {
     this.addCommand({
       id: 'toggle-share-mode',
       name: 'Toggle share mode for this page',
-      editorCallback: (editor) => this.toggleShareMode(editor),
+      // checkCallback so the command shows up in Reading View (where
+      // most users sit to look at rendered diagrams), not just in
+      // editor / Live Preview. We resolve the target via the active
+      // file rather than the active editor.
+      checkCallback: (checking) => {
+        const file = this.app.workspace.getActiveFile()
+        if (!file || file.extension !== 'md') return false
+        if (!checking) {
+          this.toggleShareMode(file)
+        }
+        return true
+      },
     })
 
     if (this.settings.autoInjectOnSave) {
@@ -149,7 +160,7 @@ export default class BeautyDiagramPlugin extends Plugin {
     this.usage = new UsageCache(this.api)
   }
 
-  async toggleShareMode(editor: Editor) {
+  async toggleShareMode(file: TFile) {
     // Share mode = Pro+ opt-in to render this page without watermark by
     // routing through /v1/share, which consumes 1 export quota per unique
     // diagram source on first preview. Free users can't go without
@@ -184,18 +195,17 @@ export default class BeautyDiagramPlugin extends Plugin {
       return
     }
 
-    const doc = editor.getValue()
+    const doc = await this.app.vault.read(file)
     const current = parsePageMode(doc)
     const next = current === 'share' ? 'anonymous' : 'share'
     const updated = setPageShareMode(doc, next)
-
-    // Preserve the editor's cursor + scroll position across the full-doc
-    // replace. Without this the cursor jumps to the top.
-    const cursor = editor.getCursor()
-    const scroll = editor.getScrollInfo()
-    editor.setValue(updated)
-    editor.setCursor(cursor)
-    editor.scrollTo(scroll.left, scroll.top)
+    if (updated !== doc) {
+      // vault.modify fires a 'modify' event which Obsidian propagates to
+      // the active view automatically — Reading View re-renders, editor
+      // view sees the updated content (cursor handling is Obsidian's
+      // responsibility once we're past the file API).
+      await this.app.vault.modify(file, updated)
+    }
 
     new Notice(
       next === 'share'
