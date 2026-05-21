@@ -66,23 +66,23 @@ Every ` ```mermaid ` and ` ```plantuml ` block in **Reading View** is rendered t
 
 ### Per-block theme override
 
-Want Memphis on one block and the default on the rest? Put a directive on the first line:
+Want Classic on one block and the default on the rest? Put a directive on the first line:
 
 ```
 \`\`\`mermaid
-%% bd:theme=memphis
+%% bd:theme=classic
 flowchart LR
   A --> B
 \`\`\`
 ```
 
-For PlantUML use `' bd:theme=memphis` instead.
+For PlantUML use `' bd:theme=classic` instead.
 
 You can stack directives — one per line. `bg=transparent` keeps the diagram's canvas transparent for overlay on colored backgrounds:
 
 ```
 \`\`\`mermaid
-%% bd:theme=memphis
+%% bd:theme=classic
 %% bd:bg=transparent
 flowchart LR
   A --> B

@@ -52,9 +52,9 @@ describe('injectEmbeds', () => {
   })
 
   it('respects per-block theme directive when computing URL', async () => {
-    const md = '```mermaid\n%% bd:theme=memphis\nflowchart LR\n```'
+    const md = '```mermaid\n%% bd:theme=classic\nflowchart LR\n```'
     const out = await injectEmbeds(md, opts)
-    expect(out).toContain('theme=memphis')
+    expect(out).toContain('theme=classic')
   })
 })
 

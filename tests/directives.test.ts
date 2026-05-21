@@ -3,17 +3,17 @@ import { parseDirective } from '../src/directives'
 
 describe('parseDirective', () => {
   it('extracts mermaid theme directive', () => {
-    const r = parseDirective('mermaid', '%% bd:theme=memphis\nflowchart LR\n  A --> B')
+    const r = parseDirective('mermaid', '%% bd:theme=classic\nflowchart LR\n  A --> B')
     expect(r).toEqual({
-      overrides: { theme: 'memphis' },
+      overrides: { theme: 'classic' },
       source: 'flowchart LR\n  A --> B',
     })
   })
 
   it('extracts plantuml theme directive', () => {
-    const r = parseDirective('plantuml', "' bd:theme=memphis\n@startuml\nA --> B\n@enduml")
+    const r = parseDirective('plantuml', "' bd:theme=classic\n@startuml\nA --> B\n@enduml")
     expect(r).toEqual({
-      overrides: { theme: 'memphis' },
+      overrides: { theme: 'classic' },
       source: '@startuml\nA --> B\n@enduml',
     })
   })
@@ -27,19 +27,19 @@ describe('parseDirective', () => {
   })
 
   it('ignores wrong comment style', () => {
-    const r = parseDirective('mermaid', "' bd:theme=memphis\nflowchart LR")
+    const r = parseDirective('mermaid', "' bd:theme=classic\nflowchart LR")
     expect(r.overrides).toEqual({})
-    expect(r.source).toBe("' bd:theme=memphis\nflowchart LR")
+    expect(r.source).toBe("' bd:theme=classic\nflowchart LR")
   })
 
   it('ignores directive not on first line', () => {
-    const r = parseDirective('mermaid', 'flowchart LR\n%% bd:theme=memphis')
+    const r = parseDirective('mermaid', 'flowchart LR\n%% bd:theme=classic')
     expect(r.overrides).toEqual({})
   })
 
   it('tolerates whitespace around directive', () => {
-    const r = parseDirective('mermaid', '%%   bd:theme=memphis   \nflowchart LR')
-    expect(r.overrides.theme).toBe('memphis')
+    const r = parseDirective('mermaid', '%%   bd:theme=classic   \nflowchart LR')
+    expect(r.overrides.theme).toBe('classic')
     expect(r.source).toBe('flowchart LR')
   })
 
@@ -54,27 +54,27 @@ describe('parseDirective', () => {
   it('parses multi-line theme + bg directives', () => {
     const r = parseDirective(
       'mermaid',
-      '%% bd:theme=memphis\n%% bd:bg=transparent\nflowchart LR\n  A --> B',
+      '%% bd:theme=classic\n%% bd:bg=transparent\nflowchart LR\n  A --> B',
     )
-    expect(r.overrides).toEqual({ theme: 'memphis', bg: 'transparent' })
+    expect(r.overrides).toEqual({ theme: 'classic', bg: 'transparent' })
     expect(r.source).toBe('flowchart LR\n  A --> B')
   })
 
   it('tolerates blank line between two directives', () => {
     const r = parseDirective(
       'mermaid',
-      '%% bd:theme=memphis\n\n%% bd:bg=transparent\nflowchart LR',
+      '%% bd:theme=classic\n\n%% bd:bg=transparent\nflowchart LR',
     )
-    expect(r.overrides).toEqual({ theme: 'memphis', bg: 'transparent' })
+    expect(r.overrides).toEqual({ theme: 'classic', bg: 'transparent' })
     expect(r.source).toBe('flowchart LR')
   })
 
   it('stops parsing at first non-directive non-blank line', () => {
     const r = parseDirective(
       'mermaid',
-      '%% bd:theme=memphis\nflowchart LR\n%% bd:bg=transparent',
+      '%% bd:theme=classic\nflowchart LR\n%% bd:bg=transparent',
     )
-    expect(r.overrides).toEqual({ theme: 'memphis' })
+    expect(r.overrides).toEqual({ theme: 'classic' })
     expect(r.source).toBe('flowchart LR\n%% bd:bg=transparent')
   })
 

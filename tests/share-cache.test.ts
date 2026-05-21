@@ -26,9 +26,9 @@ describe('ShareCache', () => {
 
   it('differentiates by theme', async () => {
     await cache.set('flow', 'modern', 'mermaid', 'aaa')
-    await cache.set('flow', 'memphis', 'mermaid', 'bbb')
+    await cache.set('flow', 'classic', 'mermaid', 'bbb')
     expect(await cache.get('flow', 'modern', 'mermaid')).toBe('aaa')
-    expect(await cache.get('flow', 'memphis', 'mermaid')).toBe('bbb')
+    expect(await cache.get('flow', 'classic', 'mermaid')).toBe('bbb')
   })
 
   it('expires entries past TTL', async () => {
