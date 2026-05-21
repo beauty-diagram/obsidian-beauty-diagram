@@ -35,17 +35,7 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
       return
     }
 
-    const link = el.createEl('a', {
-      attr: {
-        href: editorLink({ source: cleanSource, theme, sourceType: type }),
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        'aria-label': 'Open in Beauty Diagram editor',
-      },
-    })
-    link.addClass('bd-link')
-
-    const img = link.createEl('img', {
+    const img = el.createEl('img', {
       attr: {
         src: url,
         alt: firstNonEmptyLine(cleanSource),
@@ -60,6 +50,21 @@ export function makeHandler(type: SourceType, deps: HandlerDeps) {
       el.empty()
       renderError(el, err, () => deps.fallback(cleanSource, type, el))
     })
+
+    // Sibling overlay badge — sits absolutely over the bottom-right of the
+    // image. Image itself is NOT wrapped in an anchor so it stays a pure
+    // image (no misleading "click to edit and sync" affordance).
+    const badge = el.createEl('a', {
+      attr: {
+        href: editorLink({ source: cleanSource, theme, sourceType: type }),
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        'aria-label':
+          "Open this diagram's source in the Beauty Diagram editor (edits don't sync back to this note)",
+      },
+      text: '↗ Open in editor',
+    })
+    badge.addClass('bd-edit-badge')
   }
 }
 

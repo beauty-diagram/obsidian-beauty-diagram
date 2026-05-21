@@ -1,4 +1,8 @@
+/* Container for one rendered diagram. Stays block-level so the inner
+   <img> gets the row's width to size against (SVGs from /v1/beautify.svg
+   carry only viewBox, no intrinsic width — they need a sized parent). */
 .bd-block {
+  position: relative;
   margin: 1em 0;
 }
 
@@ -7,6 +11,53 @@
   height: auto;
   display: block;
   border-radius: 6px;
+}
+
+/* Hover-revealed badge that links to the bd editor with source prefilled.
+   Sibling to <img>, NOT wrapping it — keeps "click image = view fullsize"
+   intuition intact and only the badge feels like a link. */
+.bd-edit-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  border-radius: 6px;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms ease, transform 120ms ease;
+  pointer-events: none;
+  font-family: var(--font-interface, inherit);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+
+.bd-block:hover .bd-edit-badge,
+.bd-edit-badge:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bd-edit-badge:hover {
+  background: rgba(15, 23, 42, 0.94);
+  transform: translateY(-1px);
+}
+
+/* Touch devices have no hover — keep badge faintly visible so it's
+   discoverable on iOS/Android Obsidian. */
+@media (hover: none) {
+  .bd-edit-badge {
+    opacity: 0.65;
+    pointer-events: auto;
+  }
+  .bd-edit-badge:active {
+    opacity: 1;
+  }
 }
 
 .bd-error {
@@ -30,15 +81,4 @@
 
 .bd-error-actions button {
   margin-right: 6px;
-}
-
-.bd-link {
-  display: block;
-  text-decoration: none;
-  border-bottom: none;
-}
-
-.bd-link:hover .bd-img {
-  filter: brightness(0.97);
-  transition: filter 120ms ease;
 }
