@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0 — 2026-05-21
+
+### Fixes
+
+- **share-cache**: namespace entries by API key to prevent cross-account token leakage
+
 ## 0.1.0-alpha.9 — 2026-05-21
 
 ### Fixes
