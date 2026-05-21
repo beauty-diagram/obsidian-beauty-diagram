@@ -43,7 +43,17 @@ export default class BeautyDiagramPlugin extends Plugin {
       )
     }
 
-    const handlerDeps = { settings: this.settings, cache: this.cache, api: this.api, disableForFormat }
+    // getApi is a lazy accessor — NOT a captured snapshot. saveSettings
+    // rebuilds this.api when the user changes their key / base URL, and
+    // the handler closure needs to pick up the new client on next render
+    // instead of latching to the onload-time instance (which would silently
+    // call /v1/share with stale credentials and produce the wrong plan tier).
+    const handlerDeps = {
+      settings: this.settings,
+      cache: this.cache,
+      getApi: () => this.api,
+      disableForFormat,
+    }
 
     if (this.settings.replaceMermaid) {
       const mermaidHandler = makeHandler('mermaid', handlerDeps)

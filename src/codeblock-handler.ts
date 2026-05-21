@@ -10,7 +10,14 @@ import { editorLink } from './editor-link'
 export interface HandlerDeps {
   settings: BeautyDiagramSettings
   cache: ShareCache
-  api: ApiClient
+  /**
+   * Lazy accessor for the current ApiClient. Must NOT be a captured
+   * snapshot — saveSettings rebuilds the underlying client when the
+   * user changes API key / base URL, and the handler needs to see
+   * those updates on the next render. A function call here means
+   * every createShare uses the freshest credentials.
+   */
+  getApi: () => ApiClient
   /** Called when user clicks "Use built-in renderer" in the error UI.
    *  Should toggle off the relevant render-replacement setting and
    *  show a Notice prompting the user to reload Obsidian. */
@@ -128,7 +135,7 @@ async function resolveUrl(
     return bg === 'transparent' ? `${base}?bg=transparent` : base
   }
 
-  const share = await deps.api.createShare({ source, theme, sourceFormat })
+  const share = await deps.getApi().createShare({ source, theme, sourceFormat })
   await deps.cache.set(source, theme, sourceFormat, share.shareToken)
   const base = `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
   return bg === 'transparent' ? `${base}?bg=transparent` : base
