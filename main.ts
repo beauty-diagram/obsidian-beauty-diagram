@@ -7,6 +7,7 @@ import { makeHandler } from './src/codeblock-handler'
 import { injectEmbeds, cleanEmbeds } from './src/injection'
 import { parsePageMode, setPageShareMode } from './src/share-mode'
 import { UsageCache } from './src/usage-cache'
+import { shortHash } from './src/hash'
 import type { SourceFormat } from './src/types'
 
 const PLUGIN_VERSION = '0.1.0'
@@ -288,17 +289,21 @@ export default class BeautyDiagramPlugin extends Plugin {
 
   private async injectFile(file: TFile): Promise<boolean> {
     const original = await this.app.vault.read(file)
+    // Namespace the share cache per API key — see share-cache.ts comments
+    // and the handler equivalent. Without this two accounts on the same
+    // machine would alias each other's share tokens.
+    const ownerTag = await shortHash('owner:' + this.settings.apiKey)
     const updated = await injectEmbeds(original, {
       theme: this.settings.defaultTheme,
       hasApiKey: !!this.settings.apiKey,
       apiBase: this.settings.apiBase,
       shareIdForSource: async (src, theme, sourceFormat: SourceFormat) => {
-        const cached = await this.cache.get(src, theme, sourceFormat)
+        const cached = await this.cache.get(src, theme, sourceFormat, ownerTag)
         if (cached) return cached
         if (!this.settings.apiKey) return null
         try {
           const share = await this.api.createShare({ source: src, theme, sourceFormat })
-          await this.cache.set(src, theme, sourceFormat, share.shareToken)
+          await this.cache.set(src, theme, sourceFormat, share.shareToken, ownerTag)
           return share.shareToken
         } catch {
           return null

@@ -3,6 +3,7 @@ import { composeUrl } from './url-composer'
 import { parseDirective } from './directives'
 import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
+import { shortHash } from './hash'
 import type { BeautyDiagramSettings } from './settings'
 import type { PageMode, SourceFormat } from './types'
 import { editorLink } from './editor-link'
@@ -129,14 +130,20 @@ async function resolveUrl(
     )
   }
 
-  const cached = await deps.cache.get(source, theme, sourceFormat)
+  // Tag cache entries with a fingerprint of the active API key so two
+  // accounts on the same machine don't share each other's tokens. The
+  // server's share token is bound to the owner of the key that minted
+  // it; serving Account A's token from Account B's cache would render
+  // a foreign artifact and silently bypass B's quota accounting.
+  const ownerTag = await shortHash('owner:' + deps.settings.apiKey)
+  const cached = await deps.cache.get(source, theme, sourceFormat, ownerTag)
   if (cached) {
     const base = `${deps.settings.apiBase}/v1/share/${cached}.svg`
     return bg === 'transparent' ? `${base}?bg=transparent` : base
   }
 
   const share = await deps.getApi().createShare({ source, theme, sourceFormat })
-  await deps.cache.set(source, theme, sourceFormat, share.shareToken)
+  await deps.cache.set(source, theme, sourceFormat, share.shareToken, ownerTag)
   const base = `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
   return bg === 'transparent' ? `${base}?bg=transparent` : base
 }
