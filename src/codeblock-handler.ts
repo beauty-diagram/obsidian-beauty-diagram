@@ -79,9 +79,13 @@ async function resolveUrl(
   deps: HandlerDeps,
   bg?: 'transparent'
 ): Promise<string> {
-  const hasApiKey = !!deps.settings.apiKey
+  // Phase 1 of share-mode spec: keep existing behavior — preview goes through
+  // share path when an API key is configured. Phase 2 will read the page's
+  // frontmatter `bd-share` marker instead, and dropping the implicit
+  // "API key → share" rule is the documented break-change in alpha.4.
+  const mode = deps.settings.apiKey ? 'share' : 'anonymous'
   const result = composeUrl({
-    source, theme, sourceFormat, hasApiKey,
+    source, theme, sourceFormat, mode,
     apiBase: deps.settings.apiBase,
     bg,
   })
@@ -89,7 +93,7 @@ async function resolveUrl(
   if (result.kind === 'anonymous') return result.url
 
   // needs-share
-  if (result.reason === 'over-size-cap' && !hasApiKey) {
+  if (result.reason === 'over-size-cap' && mode === 'anonymous') {
     throw new ApiError(413, 'source_too_large', 'Diagram exceeds 5 KB. Add an API key in plugin settings.')
   }
 
