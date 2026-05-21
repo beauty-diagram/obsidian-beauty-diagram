@@ -11,8 +11,19 @@ describe('editorLink', () => {
     expect(url).toMatch(/^https:\/\/www\.beauty-diagram\.com\/editor\?/)
     expect(url).toContain('format=mermaid')
     expect(url).toContain('theme=modern')
-    expect(url).toMatch(/source=[A-Za-z0-9_-]+/)
+    expect(url).toMatch(/source=[^&]+/)
     expect(url).not.toContain('=&') // no empty params
+  })
+
+  it('URI-encodes the source as plain text (not base64) so Next.js auto-decodes', () => {
+    const url = editorLink({
+      source: 'flowchart LR\n  A --> B',
+      theme: 'modern',
+      sourceType: 'mermaid',
+    })
+    const m = url.match(/source=([^&]+)/)!
+    // Round-trip via decodeURIComponent should recover the original plaintext.
+    expect(decodeURIComponent(m[1])).toBe('flowchart LR\n  A --> B')
   })
 
   it('encodes plantuml format correctly', () => {
@@ -23,21 +34,18 @@ describe('editorLink', () => {
     })
     expect(url).toContain('format=plantuml')
     expect(url).toContain('theme=neon')
+    const m = url.match(/source=([^&]+)/)!
+    expect(decodeURIComponent(m[1])).toBe('@startuml\nA --> B\n@enduml')
   })
 
-  it('round-trips UTF-8 source', () => {
+  it('round-trips UTF-8 source (CJK)', () => {
     const url = editorLink({
       source: '中文 diagram',
       theme: 'modern',
       sourceType: 'mermaid',
     })
     const m = url.match(/source=([^&]+)/)!
-    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/')
-    const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4)
-    const decoded = new TextDecoder().decode(
-      Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
-    )
-    expect(decoded).toBe('中文 diagram')
+    expect(decodeURIComponent(m[1])).toBe('中文 diagram')
   })
 
   it('honors custom webBase', () => {
@@ -48,5 +56,17 @@ describe('editorLink', () => {
       webBase: 'http://localhost:3000',
     })
     expect(url).toMatch(/^http:\/\/localhost:3000\/editor\?/)
+  })
+
+  it('escapes ampersand and equals so query parsing stays intact', () => {
+    const url = editorLink({
+      source: 'A & B = "ok"',
+      theme: 'modern',
+      sourceType: 'mermaid',
+    })
+    // The literal & in the source MUST be encoded so it doesn't break query parsing
+    expect(url).not.toMatch(/source=A & B/)
+    const m = url.match(/source=([^&]+)/)!
+    expect(decodeURIComponent(m[1])).toBe('A & B = "ok"')
   })
 })

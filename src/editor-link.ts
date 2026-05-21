@@ -9,15 +9,18 @@ export interface EditorLinkOptions {
   webBase?: string
 }
 
+/**
+ * Build a deep-link to the Beauty Diagram editor with source prefilled.
+ *
+ * The editor page reads `source` as **plain text** (Next.js auto-decodes
+ * URI components), so we MUST send URI-encoded plaintext — not base64.
+ * /v1/beautify.svg uses base64url for a different reason (image GET cache
+ * key + binary-safe). The two URLs are intentionally different shapes.
+ */
 export function editorLink(opts: EditorLinkOptions): string {
   const base = opts.webBase ?? DEFAULT_WEB_BASE
-  const encoded = base64UrlEncode(opts.source)
-  return `${base}/editor?source=${encoded}&format=${opts.sourceType}&theme=${encodeURIComponent(opts.theme)}`
-}
-
-function base64UrlEncode(s: string): string {
-  const bytes = new TextEncoder().encode(s)
-  let bin = ''
-  for (const b of bytes) bin += String.fromCharCode(b)
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  const source = encodeURIComponent(opts.source)
+  const format = encodeURIComponent(opts.sourceType)
+  const theme = encodeURIComponent(opts.theme)
+  return `${base}/editor?source=${source}&format=${format}&theme=${theme}`
 }
