@@ -51,7 +51,7 @@ commits via `scripts/update-changelog.mjs` on each `npm version` bump.
 - **api-client**: translate sourceType → sourceFormat at /v1/share boundary
 - **api-client**: use obsidian.requestUrl to bypass renderer CORS
 - **editor-link**: URI-encode plaintext source, not base64
-- **styles**: .bd-link must be display:block so SVG <img> has a sized parent
+- **styles**: .bd-link must be display:block so SVG \<img\> has a sized parent
 - **main**: stronger mermaid override (sortOrder -10000) + .mermaid div fallback path
 - **main**: use markdown post-processor for mermaid to override built-in
 - **api-client test**: type vi.fn with fetch signature so mock.calls is typed
