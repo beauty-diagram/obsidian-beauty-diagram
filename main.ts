@@ -1,4 +1,4 @@
-import { Notice, Platform, Plugin, TFile } from 'obsidian'
+import { MarkdownView, Notice, Platform, Plugin, TFile } from 'obsidian'
 import { BeautyDiagramSettings, DEFAULT_SETTINGS, loadSettings, saveSettings } from './src/settings'
 import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
@@ -200,11 +200,14 @@ export default class BeautyDiagramPlugin extends Plugin {
     const next = current === 'share' ? 'anonymous' : 'share'
     const updated = setPageShareMode(doc, next)
     if (updated !== doc) {
-      // vault.modify fires a 'modify' event which Obsidian propagates to
-      // the active view automatically — Reading View re-renders, editor
-      // view sees the updated content (cursor handling is Obsidian's
-      // responsibility once we're past the file API).
       await this.app.vault.modify(file, updated)
+      // vault.modify alone won't re-run the markdown post-processor on an
+      // already-open Reading View when only the frontmatter changed —
+      // Obsidian's diff layer sees the fence bodies as unchanged and
+      // skips reprocessing. Force a full rerender on every leaf showing
+      // this file so the new mode takes effect immediately, without the
+      // user having to close + reopen the note.
+      this.rerenderPreviewsFor(file)
     }
 
     new Notice(
@@ -214,6 +217,28 @@ export default class BeautyDiagramPlugin extends Plugin {
         : 'Beauty Diagram: share mode disabled. This page renders anonymously (watermark).',
       6000,
     )
+  }
+
+  /**
+   * Force-rerender every open MarkdownView showing the given file.
+   * Uses Obsidian's undocumented-but-stable `previewMode.rerender(true)`
+   * (used by Templater, Dataview, etc). Silently degrades if the API
+   * isn't present so a future Obsidian breakage doesn't crash the
+   * plugin — at worst the user falls back to manual reopen.
+   */
+  private rerenderPreviewsFor(file: TFile) {
+    try {
+      const leaves = this.app.workspace.getLeavesOfType('markdown')
+      for (const leaf of leaves) {
+        const view = leaf.view
+        if (!(view instanceof MarkdownView)) continue
+        if (view.file?.path !== file.path) continue
+        const preview = (view as unknown as { previewMode?: { rerender?: (full?: boolean) => void } }).previewMode
+        preview?.rerender?.(true)
+      }
+    } catch {
+      // ignore — fallback is the existing "user reopens note" UX
+    }
   }
 
   async runInjectionCurrent() {
