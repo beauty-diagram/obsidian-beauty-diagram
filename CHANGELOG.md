@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.6 — 2026-05-21
+
+### Features
+
+- **command**: force preview rerender after share-mode toggle
+
 ## 0.1.0-alpha.5 — 2026-05-21
 
 ### Fixes
