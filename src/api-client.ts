@@ -19,9 +19,18 @@ export interface ShareInput {
   sourceFormat: SourceFormat
 }
 
+/**
+ * Server response from POST /v1/share. The embed URL is built from `shareToken`:
+ *   `${apiBase}/v1/share/${shareToken}.svg`
+ * `shareUrl` is the human-facing /s/<slug> page, not the SVG endpoint.
+ */
 export interface ShareResult {
-  id: string
-  url: string
+  diagramId: string
+  shareToken: string
+  sharePath: string
+  shareUrl: string
+  title: string | null
+  diagramType: string
 }
 
 export interface ThemeInfo {

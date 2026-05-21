@@ -22,8 +22,18 @@ function mockResponse(opts: {
 
 describe('api-client', () => {
   it('createShare posts with auth header and parses response', async () => {
+    // Server response shape per packages/api/.../share.ts (returns shareToken + diagramId,
+    // NOT id/url). Plugin builds embed URL from shareToken.
+    const serverResponse = {
+      diagramId: 'aaa-uuid-bbb',
+      shareToken: 'shTk123abc4',
+      sharePath: '/s/shTk123abc4',
+      shareUrl: 'https://www.beauty-diagram.com/s/shTk123abc4',
+      title: null,
+      diagramType: 'flowchart',
+    }
     const requestFn = vi.fn<[RequestUrlParam], Promise<RequestUrlResponse>>(async () =>
-      mockResponse({ json: { id: 'abc123', url: 'https://www.beauty-diagram.com/s/abc123' } })
+      mockResponse({ json: serverResponse })
     )
 
     const client = createApiClient({
@@ -34,7 +44,7 @@ describe('api-client', () => {
     })
     const r = await client.createShare({ source: 'A --> B', theme: 'modern', sourceFormat: 'mermaid' })
 
-    expect(r).toEqual({ id: 'abc123', url: 'https://www.beauty-diagram.com/s/abc123' })
+    expect(r).toEqual(serverResponse)
     expect(requestFn).toHaveBeenCalledOnce()
     const req = requestFn.mock.calls[0][0]
     expect(req.url).toBe('https://api.beauty-diagram.com/v1/share')
@@ -57,7 +67,16 @@ describe('api-client', () => {
 
   it('createShare omits auth header when no key', async () => {
     const requestFn = vi.fn<[RequestUrlParam], Promise<RequestUrlResponse>>(async () =>
-      mockResponse({ json: { id: 'x', url: 'x' } })
+      mockResponse({
+        json: {
+          diagramId: 'x',
+          shareToken: 'x',
+          sharePath: '/s/x',
+          shareUrl: 'https://www.beauty-diagram.com/s/x',
+          title: null,
+          diagramType: 'flowchart',
+        },
+      })
     )
 
     const client = createApiClient({

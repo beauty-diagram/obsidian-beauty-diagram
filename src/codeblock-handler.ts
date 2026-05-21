@@ -91,8 +91,8 @@ async function resolveUrl(
   if (cached) return `${deps.settings.apiBase}/v1/share/${cached}.svg`
 
   const share = await deps.api.createShare({ source, theme, sourceFormat })
-  await deps.cache.set(source, theme, sourceFormat, share.id)
-  return `${deps.settings.apiBase}/v1/share/${share.id}.svg`
+  await deps.cache.set(source, theme, sourceFormat, share.shareToken)
+  return `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
 }
 
 function renderError(el: HTMLElement, err: unknown, onFallback: () => Promise<void>) {

@@ -190,8 +190,8 @@ export default class BeautyDiagramPlugin extends Plugin {
         if (!this.settings.apiKey) return null
         try {
           const share = await this.api.createShare({ source: src, theme, sourceFormat })
-          await this.cache.set(src, theme, sourceFormat, share.id)
-          return share.id
+          await this.cache.set(src, theme, sourceFormat, share.shareToken)
+          return share.shareToken
         } catch {
           return null
         }
