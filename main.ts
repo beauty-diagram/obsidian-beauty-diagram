@@ -1,10 +1,12 @@
-import { Notice, Platform, Plugin, TFile } from 'obsidian'
+import { Editor, Notice, Platform, Plugin, TFile } from 'obsidian'
 import { BeautyDiagramSettings, DEFAULT_SETTINGS, loadSettings, saveSettings } from './src/settings'
 import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
 import { createApiClient, ApiClient } from './src/api-client'
 import { makeHandler } from './src/codeblock-handler'
 import { injectEmbeds, cleanEmbeds } from './src/injection'
+import { parsePageMode, setPageShareMode } from './src/share-mode'
+import { UsageCache } from './src/usage-cache'
 import type { SourceFormat } from './src/types'
 
 const PLUGIN_VERSION = '0.1.0'
@@ -13,6 +15,7 @@ export default class BeautyDiagramPlugin extends Plugin {
   settings!: BeautyDiagramSettings
   cache!: ShareCache
   api!: ApiClient
+  usage!: UsageCache
 
   async onload() {
     this.settings = await loadSettings(this)
@@ -24,6 +27,7 @@ export default class BeautyDiagramPlugin extends Plugin {
       apiKey: this.settings.apiKey || null,
       version: PLUGIN_VERSION,
     })
+    this.usage = new UsageCache(this.api)
 
     const disableForFormat = async (sourceFormat: SourceFormat) => {
       if (sourceFormat === 'mermaid') {
@@ -109,6 +113,11 @@ export default class BeautyDiagramPlugin extends Plugin {
       name: 'Clean orphan embed URLs in vault',
       callback: () => this.runCleanVault(),
     })
+    this.addCommand({
+      id: 'toggle-share-mode',
+      name: 'Toggle share mode for this page',
+      editorCallback: (editor) => this.toggleShareMode(editor),
+    })
 
     if (this.settings.autoInjectOnSave) {
       this.registerEvent(
@@ -135,6 +144,66 @@ export default class BeautyDiagramPlugin extends Plugin {
       apiKey: this.settings.apiKey || null,
       version: PLUGIN_VERSION,
     })
+    // Rebuild UsageCache with the new client so the next plan check
+    // sees the updated key; also invalidates any stale plan reading.
+    this.usage = new UsageCache(this.api)
+  }
+
+  async toggleShareMode(editor: Editor) {
+    // Share mode = Pro+ opt-in to render this page without watermark by
+    // routing through /v1/share, which consumes 1 export quota per unique
+    // diagram source on first preview. Free users can't go without
+    // watermark even via share path, so we surface an upgrade prompt
+    // instead of silently consuming their share quota for no benefit.
+    // See spec §5 for the gating flow.
+    if (!this.settings.apiKey) {
+      new Notice(
+        "Set your Beauty Diagram API key in plugin settings first, then run this command. " +
+          "Share mode requires an authenticated key to call /v1/share.",
+        8000,
+      )
+      return
+    }
+
+    const plan = await this.usage.getPlan()
+    if (plan === 'free') {
+      new Notice(
+        "Share mode requires a Pro plan. " +
+          "Free users still get unlimited anonymous preview with watermark. " +
+          "Upgrade at https://www.beauty-diagram.com/pricing",
+        10000,
+      )
+      return
+    }
+    if (plan === 'unknown') {
+      new Notice(
+        "Couldn't verify your plan. Check your network and API key, " +
+          "then run \"Beauty Diagram: Verify API key\" first.",
+        8000,
+      )
+      return
+    }
+
+    const doc = editor.getValue()
+    const current = parsePageMode(doc)
+    const next = current === 'share' ? 'anonymous' : 'share'
+    const updated = setPageShareMode(doc, next)
+
+    // Preserve the editor's cursor + scroll position across the full-doc
+    // replace. Without this the cursor jumps to the top.
+    const cursor = editor.getCursor()
+    const scroll = editor.getScrollInfo()
+    editor.setValue(updated)
+    editor.setCursor(cursor)
+    editor.scrollTo(scroll.left, scroll.top)
+
+    new Notice(
+      next === 'share'
+        ? 'Beauty Diagram: share mode enabled for this page. ' +
+            'First preview consumes 1 share quota per unique diagram source.'
+        : 'Beauty Diagram: share mode disabled. This page renders anonymously (watermark).',
+      6000,
+    )
   }
 
   async runInjectionCurrent() {
