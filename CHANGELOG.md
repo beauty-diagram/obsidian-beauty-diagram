@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.5 — 2026-05-21
+
+### Fixes
+
+- **command**: show toggle-share-mode in Reading View too
+
 ## 0.1.0-alpha.4 — 2026-05-21
 
 ### Features
