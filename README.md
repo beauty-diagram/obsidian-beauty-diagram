@@ -46,17 +46,16 @@ And PlantUML:
 
 ## Installation
 
-### Beta (via BRAT) — recommended while in alpha
+1. Open Obsidian → **Settings → Community plugins**.
+2. Click **Browse** and search for **Beauty Diagram**.
+3. **Install**, then **Enable** the plugin.
+4. Open any note with a ` ```mermaid ` or ` ```plantuml ` block in **Reading View**.
 
-1. Install the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin from Obsidian Community Plugins.
-2. BRAT settings → **Add Beta plugin**.
-3. Paste `beauty-diagram/obsidian-beauty-diagram`.
-4. Obsidian → Settings → Community plugins → enable **Beauty Diagram**.
-5. Open any note with a ` ```mermaid ` or ` ```plantuml ` block in **Reading View**.
+### Early access via BRAT (optional)
 
-### Community Plugins (after stabilization)
-
-Coming soon — search for **Beauty Diagram** in Obsidian's Browse community plugins panel.
+If you want to test pre-release builds ahead of the Community Plugins
+listing, install [BRAT](https://github.com/TfTHacker/obsidian42-brat),
+then **Add Beta plugin** → paste `beauty-diagram/obsidian-beauty-diagram`.
 
 ## Usage
 
