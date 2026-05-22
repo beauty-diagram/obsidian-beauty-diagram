@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-05-22
+
+### Docs
+
+- **readme**: promote Community Plugins install to primary, demote BRAT
+
 ## 0.1.2 — 2026-05-22
 
 ### Docs

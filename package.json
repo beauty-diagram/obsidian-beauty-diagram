@@ -1,6 +1,6 @@
 {
   "name": "obsidian-beauty-diagram",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Render Mermaid and PlantUML in Obsidian via the Beauty Diagram API.",
   "main": "main.js",
   "scripts": {
