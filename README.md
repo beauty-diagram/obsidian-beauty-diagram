@@ -4,8 +4,6 @@
 
 Beautify every ` ```mermaid ` and ` ```plantuml ` block in your Obsidian notes with 9 polished themes, in Reading View, with zero setup.
 
-> **Upgrading from `0.1.0-alpha.3`?** The implicit *"API key present → preview without watermark"* behavior has been removed. Watermark-free preview is now an explicit per-page opt-in (Pro+ only) to avoid silently consuming your monthly share quota. See [Share mode](#share-mode-prosafe-pro-opt-in).
-
 ## See it in action
 
 The same `flowchart LR` source, three different themes — rendered live by [Beauty Diagram](https://www.beauty-diagram.com):
@@ -70,26 +68,26 @@ Every ` ```mermaid ` and ` ```plantuml ` block in **Reading View** is rendered t
 
 Want Classic on one block and the default on the rest? Put a directive on the first line:
 
-```
-\`\`\`mermaid
+````md
+```mermaid
 %% bd:theme=classic
 flowchart LR
   A --> B
-\`\`\`
 ```
+````
 
 For PlantUML use `' bd:theme=classic` instead.
 
 You can stack directives — one per line. `bg=transparent` keeps the diagram's canvas transparent for overlay on colored backgrounds:
 
-```
-\`\`\`mermaid
+````md
+```mermaid
 %% bd:theme=classic
 %% bd:bg=transparent
 flowchart LR
   A --> B
-\`\`\`
 ```
+````
 
 Supported keys: `theme` (any of the 9 themes), `bg` (`transparent` only). Directive lines are consumed by the plugin and stripped before rendering.
 
@@ -156,7 +154,7 @@ A: Not yet — render runs in Reading View only. Live Preview falls back to Obsi
 A: Anonymous renders (default) are stateless — the source is encoded directly into the embed URL and rendered on demand. The server doesn't persist anything. Share mode (Pro+ opt-in) saves the source to your Beauty Diagram account so it can be served watermark-free and shared via public URL — that's why it consumes share quota.
 
 **Q: My Pro key isn't removing the watermark.**
-A: As of `0.1.0-alpha.4` the API key alone no longer auto-enables share mode (it would silently consume your quota). Opt in per page with **Beauty Diagram: Toggle share mode for this page** — the plugin adds `bd-share: true` to the front-matter and renders that page via the share endpoint.
+A: API key alone doesn't auto-enable watermark-free preview — that would silently consume your monthly share quota. Watermark-free is an explicit per-page opt-in: run **Beauty Diagram: Toggle share mode for this page** from the Command Palette. The plugin adds `bd-share: true` to the front-matter and renders that page via the share endpoint. See the [Share mode](#share-mode-pro-per-page-opt-in) section above.
 
 **Q: Mobile support?**
 A: Yes. The plugin uses Obsidian's `requestUrl` API which works on iOS / Android. Image cache size is smaller on mobile (200 entries vs 1000 desktop).
