@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — 2026-05-22
+
+### Other
+
+- style(properties): hide bd-share row in Obsidian Properties pane
+
 ## 0.1.0 — 2026-05-21
 
 ### Fixes
