@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2 — 2026-05-22
+
+### Docs
+
+- **readme**: remove version-history callouts + fix nested fence escape
+
 ## 0.1.1 — 2026-05-22
 
 ### Other
