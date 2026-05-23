@@ -6,11 +6,11 @@ Beautify every ` ```mermaid ` and ` ```plantuml ` block in your Obsidian notes w
 
 ## See it in action
 
-The same `flowchart LR` source, three different themes — rendered live by [Beauty Diagram](https://www.beauty-diagram.com):
+The same `flowchart LR` source, three different themes — rendered by [Beauty Diagram](https://www.beauty-diagram.com):
 
 | Modern | Obsidian | Memphis (Premium) |
 |---|---|---|
-| <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=modern" width="280"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=obsidian" width="280"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=memphis" width="280"> |
+| <img src="images/hero-modern.svg" width="280"> | <img src="images/hero-obsidian.svg" width="280"> | <img src="images/hero-memphis.svg" width="280"> |
 
 ## Why
 
@@ -26,23 +26,23 @@ The same `flowchart LR` source, three different themes — rendered live by [Bea
 
 | Classic | Modern | Slate |
 |---|---|---|
-| <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=classic" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=modern" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=slate" width="220"> |
+| <img src="images/hero-classic.svg" width="220"> | <img src="images/hero-modern.svg" width="220"> | <img src="images/hero-slate.svg" width="220"> |
 
 | Atlas (Pro) | Obsidian (Pro) | Brutalist (Pro) |
 |---|---|---|
-| <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=atlas" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=obsidian" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=brutalist" width="220"> |
+| <img src="images/hero-atlas.svg" width="220"> | <img src="images/hero-obsidian.svg" width="220"> | <img src="images/hero-brutalist.svg" width="220"> |
 
 | Atelier (Pro) | Blueprint (Premium) | Memphis (Premium) |
 |---|---|---|
-| <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=atelier" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=blueprint" width="220"> | <img src="https://api.beauty-diagram.com/v1/beautify.svg?source=Zmxvd2NoYXJ0IExSCiAgU3RhcnQgLS0-IENoZWNre09LP30KICBDaGVjayAtLT58WWVzfCBEb25lCiAgQ2hlY2sgLS0-fE5vfCBSZXRyeSAtLT4gQ2hlY2s&theme=memphis" width="220"> |
+| <img src="images/hero-atelier.svg" width="220"> | <img src="images/hero-blueprint.svg" width="220"> | <img src="images/hero-memphis.svg" width="220"> |
 
 Sequence diagrams get the same treatment:
 
-<img src="https://api.beauty-diagram.com/v1/beautify.svg?source=c2VxdWVuY2VEaWFncmFtCiAgcGFydGljaXBhbnQgVXNlcgogIHBhcnRpY2lwYW50IEFQSQogIFVzZXItPj5BUEk6IFBPU1QgL3YxL3NoYXJlCiAgQVBJLS0-PlVzZXI6IHNoYXJlVG9rZW4&theme=modern" width="520">
+<img src="images/sequence-modern.svg" width="520">
 
 And PlantUML:
 
-<img src="https://api.beauty-diagram.com/v1/beautify.svg?source=QHN0YXJ0dW1sCmFjdG9yIFVzZXIKcGFydGljaXBhbnQgU3lzdGVtClVzZXIgLT4gU3lzdGVtOiBsb2dpbgpTeXN0ZW0gLT4gVXNlcjogdG9rZW4KQGVuZHVtbA&theme=modern" width="520">
+<img src="images/plantuml-modern.svg" width="520">
 
 ## Installation
 

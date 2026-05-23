@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="24.0 -44.3 803.0 422.6" role="img" aria-label="Diagram render">
+      <defs>
+        <linearGradient id="surface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f6f6f3" />
+          <stop offset="100%" stop-color="#eef0eb" />
+        </linearGradient>
+        <linearGradient id="entrySurface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c9efeb" />
+          <stop offset="100%" stop-color="#6cccc4" />
+        </linearGradient>
+        <linearGradient id="gateSurface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff39a" />
+          <stop offset="100%" stop-color="#f4c834" />
+        </linearGradient>
+        
+        <linearGradient id="mergeSurface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#cec9fb" />
+          <stop offset="100%" stop-color="#9189ee" />
+        </linearGradient>
+        <linearGradient id="secondarySurface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f7c0b1" />
+          <stop offset="100%" stop-color="#ec8d76" />
+        </linearGradient>
+        <linearGradient id="primaryCardSurface" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c9efeb" />
+          <stop offset="100%" stop-color="#6cccc4" />
+        </linearGradient>
+        <filter id="cardShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="5" stdDeviation="12" flood-color="#1f2937" flood-opacity="0.10" />
+          <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1f2937" flood-opacity="0.05" />
+        </filter>
+        
+        <filter id="theme-filter" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="1" stdDeviation="2.2"
+            flood-color="#1f2937"
+            flood-opacity="0.05" />
+        </filter>
+        <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+          <polygon points="0 0, 8 3.5, 0 7" fill="#1f2937" />
+        </marker>
+        <marker id="arrowhead-warm" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+          <polygon points="0 0, 8 3.5, 0 7" fill="#0f766e" />
+        </marker>
+        <marker id="arrowhead-cool" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+          <polygon points="0 0, 8 3.5, 0 7" fill="#dc2626" />
+        </marker>
+        <marker id="arrowhead-bold" markerWidth="14" markerHeight="14" refX="13" refY="5.5" orient="auto">
+          <polygon points="1 0, 13 5.5, 1 11" fill="#1f2937" />
+        </marker>
+        <marker id="chevron-cyan" viewBox="0 0 12 12" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8" fill="none" stroke="#7dd3fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </marker>
+        <marker id="triangle-open" markerWidth="14" markerHeight="12" refX="10" refY="6" orient="auto">
+          <path d="M 10 6 L 0 0 L 0 12 Z" fill="#e2e4df" stroke="#1f2937" stroke-width="1.5" />
+        </marker>
+        <marker id="diamond-filled" markerWidth="14" markerHeight="12" refX="10" refY="6" orient="auto">
+          <path d="M 0 6 L 5 1 L 10 6 L 5 11 Z" fill="#1f2937" stroke="#1f2937" stroke-width="1.2" />
+        </marker>
+        <marker id="diamond-open" markerWidth="14" markerHeight="12" refX="10" refY="6" orient="auto">
+          <path d="M 0 6 L 5 1 L 10 6 L 5 11 Z" fill="#e2e4df" stroke="#1f2937" stroke-width="1.2" />
+        </marker>
+        <marker id="er-oneone" markerWidth="18" markerHeight="18" refX="14" refY="9" orient="auto">
+          <path d="M 4 2 V 16 M 10 2 V 16" stroke="#1f2937" stroke-width="1.5" />
+        </marker>
+        <marker id="er-onezero" markerWidth="24" markerHeight="18" refX="20" refY="9" orient="auto">
+          <circle cx="5" cy="9" r="3.2" fill="#e2e4df" stroke="#1f2937" stroke-width="1.2" />
+          <path d="M 12 2 V 16" stroke="#1f2937" stroke-width="1.5" />
+        </marker>
+        <marker id="er-zeroone" markerWidth="24" markerHeight="18" refX="20" refY="9" orient="auto">
+          <circle cx="5" cy="9" r="3.2" fill="#e2e4df" stroke="#1f2937" stroke-width="1.2" />
+          <path d="M 12 2 V 16" stroke="#1f2937" stroke-width="1.5" />
+        </marker>
+        <marker id="er-zeromany" markerWidth="28" markerHeight="18" refX="24" refY="9" orient="auto">
+          <circle cx="5" cy="9" r="3.2" fill="#e2e4df" stroke="#1f2937" stroke-width="1.2" />
+          <path d="M 13 9 L 22 3 M 13 9 L 22 9 M 13 9 L 22 15" stroke="#1f2937" stroke-width="1.4" />
+        </marker>
+        <marker id="er-manyone" markerWidth="28" markerHeight="18" refX="24" refY="9" orient="auto">
+          <path d="M 4 9 L 13 3 M 4 9 L 13 9 M 4 9 L 13 15" stroke="#1f2937" stroke-width="1.4" />
+          <path d="M 18 2 V 16" stroke="#1f2937" stroke-width="1.5" />
+        </marker>
+        <marker id="er-manyzero" markerWidth="32" markerHeight="18" refX="28" refY="9" orient="auto">
+          <path d="M 4 9 L 13 3 M 4 9 L 13 9 M 4 9 L 13 15" stroke="#1f2937" stroke-width="1.4" />
+          <circle cx="20" cy="9" r="3.2" fill="#e2e4df" stroke="#1f2937" stroke-width="1.2" />
+        </marker>
+        <marker id="er-onemany" markerWidth="28" markerHeight="18" refX="24" refY="9" orient="auto">
+          <path d="M 4 2 V 16" stroke="#1f2937" stroke-width="1.5" />
+          <path d="M 10 9 L 20 3 M 10 9 L 20 9 M 10 9 L 20 15" stroke="#1f2937" stroke-width="1.4" />
+        </marker>
+        
+        
+        <linearGradient id="bd-modern-top-gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.7" /><stop offset="40%" stop-color="#ffffff" stop-opacity="0.18" /><stop offset="100%" stop-color="#ffffff" stop-opacity="0" /></linearGradient><linearGradient id="bd-modern-bottom-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#000000" stop-opacity="0" /><stop offset="65%" stop-color="#000000" stop-opacity="0" /><stop offset="100%" stop-color="#000000" stop-opacity="0.18" /></linearGradient>
+        
+      </defs>
+
+        <defs>
+          <linearGradient id="bg-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f6f6f3" />
+            <stop offset="100%" stop-color="#eef0eb" />
+          </linearGradient>
+          <pattern id="line-grid" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1f2937" stroke-width="0.6" opacity="0.32" />
+          </pattern>
+        </defs>
+        <rect x="24" y="-44.3" width="803" height="422.6" fill="url(#bg-grad)" />
+        <rect x="24" y="-44.3" width="803" height="422.6" fill="url(#line-grid)" />
+      
+        <g data-edge-id="edge-2">
+    <g>
+      <path d="M 324.500 197 L 309.847 227.817 Q 308 231.700 308 236 L 308 236 Q 308 240.300 312.281 240.701 L 383.078 247.323 Q 401 249 418.922 247.323 L 489.719 240.701 Q 494 240.300 494 236 L 494 236 Q 494 231.700 492.153 227.817 L 477.500 197" fill="none" stroke="#1f2937" stroke-width="1.6407999999999998" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1" />
+      <g><rect x="350.1" y="239.0" width="101.8" height="20.0" rx="10.0" ry="10.0" fill="#ffffff" stroke="rgba(91, 71, 194, 0.28)" stroke-width="1" /><text x="401" y="252.5" text-anchor="middle" fill="#1f2937" font-size="12" font-weight="800" font-family="var(--font-geist-sans), 'Noto Sans TC', 'Hiragino Sans', 'Yu Gothic', sans-serif">&gt;|No| Retry</text></g>
+      
+    </g>
+  </g><g data-edge-id="edge-1">
+    <g>
+      <path d="M 494.0 130.5 C 515.7 130.5, 602.3 130.5, 624.0 130.5" fill="none" stroke="#0f766e" stroke-width="1.6407999999999998" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead-warm)" opacity="1" />
+      <g><rect x="537.8" y="120.5" width="42.3" height="20.0" rx="10.0" ry="10.0" fill="#ffffff" stroke="rgba(91, 71, 194, 0.28)" stroke-width="1" /><text x="559" y="134.0" text-anchor="middle" fill="#1f2937" font-size="12" font-weight="800" font-family="var(--font-geist-sans), 'Noto Sans TC', 'Hiragino Sans', 'Yu Gothic', sans-serif">Yes</text></g>
+      
+    </g>
+  </g><g data-edge-id="edge-0">
+    <g>
+      <path d="M 220.0 130.5 C 234.7 130.5, 293.3 130.5, 308.0 130.5" fill="none" stroke="#1f2937" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="0.82" />
+      
+      
+    </g>
+  </g>
+      
+      <g data-node-id="Start"><g>
+    <defs><linearGradient id="bd-modern-fill-Start" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c9efeb" /><stop offset="100%" stop-color="#6cccc4" /></linearGradient></defs>
+    <rect x="55.0" y="104.5" width="172" height="70" rx="35" fill="#5cc4be" opacity="0.22" /><rect x="52.0" y="100.5" width="172" height="70" rx="35" fill="#5cc4be" opacity="0.42" />
+    <rect x="48" y="95.5" width="172" height="70" rx="35" fill="url(#bd-modern-fill-Start)" stroke="#3aa5a0" stroke-width="1.6" />
+    <rect x="49.2" y="96.7" width="169.6" height="67.6" rx="33.8" fill="url(#bd-modern-top-gloss)" pointer-events="none" /><rect x="49.2" y="96.7" width="169.6" height="67.6" rx="33.8" fill="url(#bd-modern-bottom-shade)" pointer-events="none" />
+    <circle cx="210.0" cy="106.5" r="1.7" fill="rgba(15,23,42,0.28)" /><circle cx="204.5" cy="106.5" r="1.7" fill="rgba(15,23,42,0.20)" /><circle cx="199.0" cy="106.5" r="1.7" fill="rgba(15,23,42,0.16)" />
+    <text x="134.0" y="134.7" text-anchor="middle" fill="#0a3a3a" font-size="12" font-weight="800" font-family="var(--font-geist-sans), 'Noto Sans TC', 'Hiragino Sans', 'Yu Gothic', sans-serif"><tspan x="134.0" dy="0">Start</tspan></text>
+  </g></g><g data-node-id="Check">
+    <g filter="url(#cardShadow)" data-node-variant="bracket-gate">
+      <defs><linearGradient id="bd-modern-bracket-fill-Check" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff39a" /><stop offset="100%" stop-color="#f4c834" /></linearGradient></defs>
+      <path d="M 308 75 L 341 75 L 341 94 L 319.55 94 L 319.55 167 L 341 167 L 341 186 L 308 186 Z" fill="#f4cd44" opacity="0.45" transform="translate(7 9)" />
+      <path d="M 494 75 L 461 75 L 461 94 L 482.45 94 L 482.45 167 L 461 167 L 461 186 L 494 186 Z" fill="#f4cd44" opacity="0.45" transform="translate(7 9)" />
+      <path d="M 308 75 L 341 75 L 341 94 L 319.55 94 L 319.55 167 L 341 167 L 341 186 L 308 186 Z" fill="url(#bd-modern-bracket-fill-Check)" stroke="#a87d18" stroke-width="2" stroke-linejoin="round" />
+      <path d="M 494 75 L 461 75 L 461 94 L 482.45 94 L 482.45 167 L 461 167 L 461 186 L 494 186 Z" fill="url(#bd-modern-bracket-fill-Check)" stroke="#a87d18" stroke-width="2" stroke-linejoin="round" />
+      
+    <text x="401" y="135.4" text-anchor="middle" fill="#3a2a10" font-size="14" font-weight="800" font-family="var(--font-geist-sans), 'Noto Sans TC', 'Hiragino Sans', 'Yu Gothic', sans-serif">
+      <tspan x="401" dy="0">OK?</tspan>
+    </text>
+  
+    </g>
+  </g><g data-node-id="Done"><g>
+      <defs><linearGradient id="bd-modern-fill-Done" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cec9fb" /><stop offset="100%" stop-color="#9189ee" /></linearGradient></defs>
+      <rect x="631.0" y="104.5" width="172" height="70" rx="35" fill="#8d86eb" opacity="0.22" /><rect x="628.0" y="100.5" width="172" height="70" rx="35" fill="#8d86eb" opacity="0.42" />
+      <rect x="624" y="95.5" width="172" height="70" rx="35" fill="url(#bd-modern-fill-Done)" stroke="#6d63d8" stroke-width="1.6" />
+      <rect x="625.2" y="96.7" width="169.6" height="67.6" rx="33.8" fill="url(#bd-modern-top-gloss)" pointer-events="none" /><rect x="625.2" y="96.7" width="169.6" height="67.6" rx="33.8" fill="url(#bd-modern-bottom-shade)" pointer-events="none" />
+      <text x="710.0" y="134.7" text-anchor="middle" fill="#1e1b4b" font-size="12" font-weight="800" font-family="var(--font-geist-sans), 'Noto Sans TC', 'Hiragino Sans', 'Yu Gothic', sans-serif"><tspan x="710.0" dy="0">Done</tspan></text>
+    </g></g>
+      
+    </svg>
