@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.4 — 2026-05-22
+
+### Added
+
+- **Per-page image width override** via `bd-width` front-matter. Three-layer cascade — page override → vault default setting → CSS default (`max-width: 100%`). Accepts `full`, `<n>px`, `<n>%`, `<n>em`, `<n>rem`. Coexists with `bd-share`.
+- **New setting "Default image width"** (Settings → Beauty Diagram → Rendering). Dropdown with 4 presets (Full / Wide 800px / Medium 640px / Narrow 480px) plus any custom CSS length that gets read from `data.json` or front-matter.
+- **New command "Beauty Diagram: Set image width for this page"** — opens a SuggestModal listing the 4 presets + a "Remove override" option. Same UX pattern as Obsidian's "Switch theme" command. Writes / removes `bd-width:` in the active note's YAML front-matter.
+
+### Internal
+
+- New pure module `src/image-width.ts` with `parsePageWidth` / `setPageWidth` / `resolveEffectiveWidth` / `widthToInlineStyle` helpers. 37 unit tests for whitelist validation (XSS guard against `javascript:`, `<script>`, missing units, negative values) and idempotent front-matter rewriting. Same shape as `share-mode.ts`; intended to be byte-for-byte copied to the VS Code repo.
+
 ## 0.1.3 — 2026-05-22
 
 ### Docs

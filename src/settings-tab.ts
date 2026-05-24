@@ -66,6 +66,30 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       })
 
     new Setting(containerEl)
+      .setName('Default image width')
+      .setDesc(
+        'Max-width applied to every rendered diagram. ' +
+          'Override per page by adding `bd-width: 800px` to the note front-matter ' +
+          '(or run the "Set image width for this page" command). ' +
+          'Accepts the 4 presets or any CSS length (e.g. `720px`, `75%`, `40em`).',
+      )
+      .addDropdown((dd) => {
+        dd.addOption('full', 'Full (default)')
+        dd.addOption('800px', 'Wide — 800px')
+        dd.addOption('640px', 'Medium — 640px')
+        dd.addOption('480px', 'Narrow — 480px')
+        // If the user has set a custom value via data.json or front-matter,
+        // surface it so the dropdown doesn't silently reset to "Full".
+        const current = this.plugin.settings.defaultImageWidth
+        const isPreset = ['full', '800px', '640px', '480px'].includes(current)
+        if (!isPreset) dd.addOption(current, `Custom — ${current}`)
+        dd.setValue(current).onChange(async (v) => {
+          this.plugin.settings.defaultImageWidth = v
+          await this.plugin.saveSettings()
+        })
+      })
+
+    new Setting(containerEl)
       .setName('Replace built-in mermaid render')
       .setDesc('When off, Obsidian renders mermaid blocks itself.')
       .addToggle((tg) =>

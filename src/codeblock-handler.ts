@@ -4,6 +4,7 @@ import { parseDirective } from './directives'
 import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
 import { shortHash } from './hash'
+import { resolveEffectiveWidth, widthToInlineStyle } from './image-width'
 import type { BeautyDiagramSettings } from './settings'
 import type { PageMode, SourceFormat } from './types'
 import { editorLink } from './editor-link'
@@ -36,10 +37,20 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
     // for us and exposes it on the post-processor context. Strict equality
     // mirrors the share-mode pure module's behavior (string "true" / array
     // [true] / capitalized True all fall back to anonymous).
-    const mode: PageMode =
-      (ctx.frontmatter as Record<string, unknown> | null | undefined)?.['bd-share'] === true
-        ? 'share'
-        : 'anonymous'
+    const frontmatter = ctx.frontmatter as Record<string, unknown> | null | undefined
+    const mode: PageMode = frontmatter?.['bd-share'] === true ? 'share' : 'anonymous'
+
+    // Per-page image width override. YAML auto-coerces `800` to number,
+    // so only string values are honored; anything else falls through to
+    // the vault default. resolveEffectiveWidth() re-validates against
+    // the whitelist so invalid front-matter never reaches the DOM.
+    const fmWidthRaw = frontmatter?.['bd-width']
+    const pageWidth = typeof fmWidthRaw === 'string' ? fmWidthRaw : null
+    const effectiveWidth = resolveEffectiveWidth(
+      pageWidth,
+      deps.settings.defaultImageWidth,
+    )
+    const widthStyle = widthToInlineStyle(effectiveWidth)
 
     el.empty()
     el.addClass('bd-block')
@@ -57,14 +68,14 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
       return
     }
 
-    const img = el.createEl('img', {
-      attr: {
-        src: url,
-        alt: firstNonEmptyLine(cleanSource),
-        loading: deps.settings.lazyLoadImages ? 'lazy' : 'eager',
-        'data-bd-source-format': sourceFormat,
-      },
-    })
+    const imgAttrs: Record<string, string> = {
+      src: url,
+      alt: firstNonEmptyLine(cleanSource),
+      loading: deps.settings.lazyLoadImages ? 'lazy' : 'eager',
+      'data-bd-source-format': sourceFormat,
+    }
+    if (widthStyle) imgAttrs.style = widthStyle
+    const img = el.createEl('img', { attr: imgAttrs })
     img.addClass('bd-img')
 
     img.addEventListener('error', () => {

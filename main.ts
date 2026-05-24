@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Platform, Plugin, TFile } from 'obsidian'
+import { MarkdownView, Notice, Platform, Plugin, SuggestModal, TFile } from 'obsidian'
 import { BeautyDiagramSettings, DEFAULT_SETTINGS, loadSettings, saveSettings } from './src/settings'
 import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
@@ -6,6 +6,11 @@ import { createApiClient, ApiClient } from './src/api-client'
 import { makeHandler } from './src/codeblock-handler'
 import { injectEmbeds, cleanEmbeds } from './src/injection'
 import { parsePageMode, setPageShareMode } from './src/share-mode'
+import {
+  IMAGE_WIDTH_PRESETS,
+  setPageWidth,
+  type ImageWidthValue,
+} from './src/image-width'
 import { UsageCache } from './src/usage-cache'
 import { shortHash } from './src/hash'
 import type { SourceFormat } from './src/types'
@@ -136,6 +141,22 @@ export default class BeautyDiagramPlugin extends Plugin {
         if (!file || file.extension !== 'md') return false
         if (!checking) {
           this.toggleShareMode(file)
+        }
+        return true
+      },
+    })
+    this.addCommand({
+      id: 'set-image-width',
+      name: 'Set image width for this page',
+      // Two-step picker: parent command opens a SuggestModal with the
+      // 4 width presets + a "Remove override" option. Same UX pattern
+      // as Obsidian's "Switch theme" command — keeps the command palette
+      // uncluttered while making every preset reachable in two keystrokes.
+      checkCallback: (checking) => {
+        const file = this.app.workspace.getActiveFile()
+        if (!file || file.extension !== 'md') return false
+        if (!checking) {
+          new ImageWidthPickerModal(this, file).open()
         }
         return true
       },
@@ -330,5 +351,76 @@ export default class BeautyDiagramPlugin extends Plugin {
         )
       }
     }
+  }
+
+  /**
+   * Apply (or remove) the per-page `bd-width` front-matter override on
+   * the given file. Pass `null` to clear and fall back to the vault
+   * default (`settings.defaultImageWidth`). Triggers a re-render by
+   * touching the file via `vault.modify`.
+   */
+  async setPageImageWidth(file: TFile, value: ImageWidthValue | null): Promise<void> {
+    const original = await this.app.vault.read(file)
+    const updated = setPageWidth(original, value)
+    if (updated === original) {
+      new Notice('Beauty Diagram: image width unchanged.', 3000)
+      return
+    }
+    await this.app.vault.modify(file, updated)
+    new Notice(
+      value === null
+        ? 'Beauty Diagram: removed bd-width override.'
+        : `Beauty Diagram: set image width to ${value}.`,
+      3000,
+    )
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ImageWidthPickerModal — 2-step picker triggered by the
+// "Set image width for this page" command. Lists the 4 presets exposed
+// by image-width.ts plus a Remove option so users can reset the page
+// to follow the vault default again. Same modal class Obsidian uses for
+// its own "Switch theme" / "Switch language" commands; users get a
+// familiar look + arrow-key navigation + fuzzy search.
+// ---------------------------------------------------------------------------
+
+type WidthChoice =
+  | { kind: 'preset'; label: string; value: ImageWidthValue }
+  | { kind: 'remove'; label: string }
+
+class ImageWidthPickerModal extends SuggestModal<WidthChoice> {
+  constructor(
+    private readonly plugin: BeautyDiagramPlugin,
+    private readonly file: TFile,
+  ) {
+    super(plugin.app)
+    this.setPlaceholder('Pick a max-width for diagrams on this page…')
+  }
+
+  getSuggestions(query: string): WidthChoice[] {
+    const choices: WidthChoice[] = [
+      ...IMAGE_WIDTH_PRESETS.map((p) => ({
+        kind: 'preset' as const,
+        label: p.label,
+        value: p.value,
+      })),
+      {
+        kind: 'remove',
+        label: 'Remove override (use vault default)',
+      },
+    ]
+    if (!query) return choices
+    const q = query.toLowerCase()
+    return choices.filter((c) => c.label.toLowerCase().includes(q))
+  }
+
+  renderSuggestion(choice: WidthChoice, el: HTMLElement): void {
+    el.createEl('div', { text: choice.label })
+  }
+
+  async onChooseSuggestion(choice: WidthChoice): Promise<void> {
+    const value = choice.kind === 'preset' ? choice.value : null
+    await this.plugin.setPageImageWidth(this.file, value)
   }
 }
