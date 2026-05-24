@@ -4,3 +4,6 @@ main.js
 .DS_Store
 .env
 data.json
+
+# Agent notes (private, not committed)
+CLAUDE.md
