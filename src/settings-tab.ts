@@ -121,18 +121,18 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
         })
       )
 
-    // —— Share Mode ——
-    containerEl.createEl('h2', { text: 'Share Mode (Pro+)' })
+    // —— Watermark-free preview ——
+    containerEl.createEl('h2', { text: 'Watermark-free preview (Pro+)' })
 
     const shareDesc = containerEl.createDiv({ cls: 'setting-item-description' })
     shareDesc.style.marginBottom = '0.75em'
     shareDesc.createSpan({
       text:
-        'By default every diagram renders via the anonymous endpoint with a watermark. ' +
+        'For your own viewing only. By default every diagram renders via the anonymous endpoint with a watermark. ' +
         "Pro and Premium users can opt in per page to render without watermark — open the page, " +
         'then run ',
     })
-    shareDesc.createEl('code', { text: 'Beauty Diagram: Toggle share mode for this page' })
+    shareDesc.createEl('code', { text: 'Beauty Diagram: Toggle watermark-free preview for this page' })
     shareDesc.createSpan({
       text: ' from the Command Palette. The plugin writes ',
     })
@@ -140,7 +140,8 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
     shareDesc.createSpan({
       text:
         " into the page's YAML front-matter. First preview of each unique diagram " +
-        'consumes 1 share quota from your plan; subsequent previews hit the local cache for free.',
+        'consumes 1 share quota from your plan; subsequent previews hit the local cache for free. ' +
+        'This only affects what YOU see in your own Obsidian — collaborators reading the markdown elsewhere still see the watermarked anonymous render. To share watermark-free with others, use the embed command below.',
     })
 
     const quotaHint = containerEl.createDiv({ cls: 'setting-item-description' })
@@ -154,24 +155,33 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
     quotaHint.createEl('strong', { text: 'Verify' })
     quotaHint.createSpan({ text: ' above to see your plan and current month usage).' })
 
-    // —— Source Injection ——
-    containerEl.createEl('h2', { text: 'Source Injection' })
+    // —— Embed share URLs (for external readers) ——
+    containerEl.createEl('h2', { text: 'Embed share URLs (for external readers)' })
+
+    const embedDesc = containerEl.createDiv({ cls: 'setting-item-description' })
+    embedDesc.style.marginBottom = '0.75em'
+    embedDesc.createSpan({
+      text:
+        'Bakes a Beauty Diagram share URL into the markdown next to every fence, so anyone who reads the note ' +
+        '(GitHub, Notion paste, Hugo, Obsidian Publish, a colleague without the plugin…) sees the polished diagram — no plugin required on their side. ' +
+        'Modifies your notes. With a Pro+ API key the URL is watermark-free; without an API key it falls back to the anonymous watermarked URL.',
+    })
 
     new Setting(containerEl)
-      .setName('Inject embed URLs in current note')
+      .setName('Embed share URLs into this note')
       .addButton((btn) =>
         btn.setButtonText('Run').onClick(() => this.plugin.runInjectionCurrent())
       )
 
     new Setting(containerEl)
-      .setName('Inject embed URLs in entire vault')
-      .setDesc('Walks every Markdown file in the vault. Idempotent.')
+      .setName('Embed share URLs into this vault')
+      .setDesc('Walks every Markdown file in the vault. Idempotent — re-runs leave existing embeds untouched.')
       .addButton((btn) =>
         btn.setButtonText('Run').onClick(() => this.plugin.runInjectionVault())
       )
 
     new Setting(containerEl)
-      .setName('Clean orphan embed URLs')
+      .setName('Clean orphan embeds in vault')
       .setDesc('Removes embed blocks whose source fence has been deleted.')
       .addButton((btn) =>
         btn.setButtonText('Run').onClick(() => this.plugin.runCleanVault())

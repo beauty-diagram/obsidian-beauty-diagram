@@ -116,22 +116,22 @@ export default class BeautyDiagramPlugin extends Plugin {
 
     this.addCommand({
       id: 'inject-current',
-      name: 'Inject embed URLs in current note',
+      name: 'Embed share URLs into this note',
       callback: () => this.runInjectionCurrent(),
     })
     this.addCommand({
       id: 'inject-vault',
-      name: 'Inject embed URLs in entire vault',
+      name: 'Embed share URLs into this vault',
       callback: () => this.runInjectionVault(),
     })
     this.addCommand({
       id: 'clean-vault',
-      name: 'Clean orphan embed URLs in vault',
+      name: 'Clean orphan embeds in vault',
       callback: () => this.runCleanVault(),
     })
     this.addCommand({
       id: 'toggle-share-mode',
-      name: 'Toggle share mode for this page',
+      name: 'Toggle watermark-free preview for this page',
       // checkCallback so the command shows up in Reading View (where
       // most users sit to look at rendered diagrams), not just in
       // editor / Live Preview. We resolve the target via the active
@@ -202,7 +202,7 @@ export default class BeautyDiagramPlugin extends Plugin {
     if (!this.settings.apiKey) {
       new Notice(
         "Set your Beauty Diagram API key in plugin settings first, then run this command. " +
-          "Share mode requires an authenticated key to call /v1/share.",
+          "Watermark-free preview requires an API key to mint share tokens.",
         8000,
       )
       return
@@ -211,7 +211,7 @@ export default class BeautyDiagramPlugin extends Plugin {
     const plan = await this.usage.getPlan()
     if (plan === 'free') {
       new Notice(
-        "Share mode requires a Pro plan. " +
+        "Watermark-free preview requires a Pro plan. " +
           "Free users still get unlimited anonymous preview with watermark. " +
           "Upgrade at https://www.beauty-diagram.com/pricing",
         10000,
@@ -244,9 +244,9 @@ export default class BeautyDiagramPlugin extends Plugin {
 
     new Notice(
       next === 'share'
-        ? 'Beauty Diagram: share mode enabled for this page. ' +
+        ? 'Beauty Diagram: watermark-free preview enabled for this page. ' +
             'First preview consumes 1 share quota per unique diagram source.'
-        : 'Beauty Diagram: share mode disabled. This page renders anonymously (watermark).',
+        : 'Beauty Diagram: watermark-free preview disabled. This page renders anonymously (watermark).',
       6000,
     )
   }
@@ -285,7 +285,7 @@ export default class BeautyDiagramPlugin extends Plugin {
 
   async runInjectionVault() {
     const files = this.app.vault.getMarkdownFiles()
-    if (!confirm(`Inject embed URLs in ${files.length} Markdown files?`)) return
+    if (!confirm(`Embed share URLs into ${files.length} Markdown files?`)) return
     let touched = 0
     for (const f of files) {
       if (await this.injectFile(f)) touched++

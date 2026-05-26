@@ -109,8 +109,17 @@ async function resolveUrl(
   deps: HandlerDeps,
   bg?: 'transparent'
 ): Promise<string> {
+  // Watermark-free preview (bd-share: true) without API key → degrade to
+  // anonymous instead of throwing. Common after API key removal or
+  // first-open of a file with bd-share already in front-matter (e.g.
+  // cloned from a collaborator's repo). Matches VS Code's
+  // share-mode-cache-miss fallback — a watermarked render is strictly
+  // better UX than a broken image.
+  const effectiveMode: PageMode =
+    mode === 'share' && !deps.settings.apiKey ? 'anonymous' : mode
+
   const result = composeUrl({
-    source, theme, sourceFormat, mode,
+    source, theme, sourceFormat, mode: effectiveMode,
     apiBase: deps.settings.apiBase,
     bg,
   })
@@ -119,25 +128,14 @@ async function resolveUrl(
 
   // needs-share — either explicit share mode (always tries share path)
   // or over-size-cap (anonymous render impossible regardless of mode).
-  if (result.reason === 'over-size-cap' && mode === 'anonymous') {
+  if (result.reason === 'over-size-cap' && effectiveMode === 'anonymous') {
+    const hint = deps.settings.apiKey
+      ? 'Enable watermark-free preview ("Beauty Diagram: Toggle watermark-free preview for this page") or run "Embed share URLs into this note" to bake a saved share URL.'
+      : 'Add your Beauty Diagram API key in plugin settings, then enable watermark-free preview for this page.'
     throw new ApiError(
       413,
       'source_too_large',
-      'Diagram exceeds 5 KB. Enable share mode for this page ' +
-        '("Beauty Diagram: Toggle share mode for this page" command) ' +
-        'or use the inject command to publish a share URL.',
-    )
-  }
-
-  // Share path. Server requires authentication for /v1/share — if the
-  // caller hit share mode without a configured API key, surface a clearer
-  // error than the raw 401 we'd otherwise propagate.
-  if (!deps.settings.apiKey) {
-    throw new ApiError(
-      401,
-      'share_requires_api_key',
-      'Share mode is enabled for this page but no API key is configured. ' +
-        'Add your Beauty Diagram API key in plugin settings.',
+      `Diagram exceeds 5 KB. ${hint}`,
     )
   }
 

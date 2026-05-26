@@ -18,7 +18,7 @@ The same `flowchart LR` source, three different themes — rendered by [Beauty D
 - **Dark-mode friendly** — diagrams keep contrast on dark vault backgrounds.
 - **Zero setup** — install, enable, every mermaid block is rendered through Beauty Diagram. No API key needed for the free tier (anonymous renders are watermarked).
 - **Per-block theme override** with a one-line directive. Mix themes in the same note.
-- **Idempotent source injection** for portable notes — published notes carry plain `<img>` references that render anywhere (GitHub, Notion paste, blog static sites).
+- **Embed share URLs** — one command bakes `<img>` references into the markdown so any reader (GitHub, Notion paste, blog static sites, plugin-less colleagues) sees the polished diagram.
 - **PlantUML supported** too, with the same theming pipeline. No local Java required.
 - **Honest error handling** — if the Beauty Diagram service is unreachable, the error UI lets you one-click disable the plugin for mermaid blocks and revert to Obsidian's built-in renderer.
 
@@ -90,14 +90,18 @@ flowchart LR
 
 Supported keys: `theme` (any of the 9 themes), `bg` (`transparent` only). Directive lines are consumed by the plugin and stripped before rendering.
 
-### Share mode (Pro+, per-page opt-in)
+### Two ways to go watermark-free
+
+Beauty Diagram offers two distinct features, depending on who you want to see the polished diagrams. Pick the one that matches your intent — they're independent and can be combined.
+
+#### Option 1 — Watermark-free preview (for your own viewing in Obsidian)
 
 By default every diagram renders via the anonymous endpoint `/v1/beautify.svg` — fast, no quota, **always watermarked**. This applies to everyone including Pro users.
 
-If you have a Pro or Premium plan, you can opt in **per page** to render diagrams without watermark:
+If you have a Pro or Premium plan, you can opt in **per page** to render diagrams without watermark **in your own Obsidian**:
 
 1. Open the page in any view.
-2. Command Palette → **Beauty Diagram: Toggle share mode for this page**.
+2. Command Palette → **Beauty Diagram: Toggle watermark-free preview for this page**.
 3. The plugin adds a marker to the page's YAML front-matter:
 
    ```yaml
@@ -107,31 +111,39 @@ If you have a Pro or Premium plan, you can opt in **per page** to render diagram
    ---
    ```
 
-4. Switch to Reading View — diagrams now render via `/v1/share/<id>.svg`. Pro/Premium owners get no watermark; the source is saved as a share on your account so it can also be referenced from a public URL.
+4. Switch to Reading View — diagrams now render via `/v1/share/<id>.svg` and your Pro/Premium account drops the watermark.
+
+> **Scope**: this only changes what _you_ see in your own Obsidian. The markdown source body is unchanged, so anyone reading the same `.md` file outside your plugin (GitHub, Notion paste, a colleague without the plugin) still sees the watermarked anonymous render. To share watermark-free, use Option 2.
 
 **Quota model**: each unique diagram source consumes 1 share quota (Pro: 100/month) on its first preview. Subsequent previews of the same source hit the local cache for free. Editing a diagram counts as a new unique source.
 
-Run the toggle command again to disable share mode — the marker is removed and the page reverts to anonymous render.
+Run the toggle command again to disable — the marker is removed and the page reverts to anonymous render.
 
 **Free users** see an upgrade prompt and no marker is written, so no quota is consumed by mistake.
 
-### Source injection (portable notes)
+#### Option 2 — Embed share URLs (so anyone, anywhere, sees the diagram)
 
-If you publish your vault (Obsidian Publish, paste to Notion, blog export, etc.), run `Cmd+P` → **Beauty Diagram: Inject embed URLs in current note**. The plugin walks every mermaid/plantuml fence and injects an idempotent `<img>` reference below it that renders anywhere markdown is read.
+When you want to publish your vault (Obsidian Publish, paste to Notion, blog export, GitHub README, etc.) **and** have the polished diagrams render for readers who don't have the plugin, run from Command Palette (`Cmd+P`):
 
-Cleanup: **Beauty Diagram: Clean orphan embed URLs in vault** removes injected references whose source fence has been deleted.
+- **Beauty Diagram: Embed share URLs into this note** — walks every Mermaid / PlantUML fence in the active note and inserts an `<img>` reference next to it that renders anywhere standard markdown is read.
+- **Beauty Diagram: Embed share URLs into this vault** — same operation across every `.md` file in the vault. Idempotent — re-running leaves existing embeds untouched (unless the fence source changed).
+- **Beauty Diagram: Clean orphan embeds in vault** — removes embed blocks whose source fence has been deleted.
+
+The injected `<img>` URLs are watermark-free when an API key is configured (Pro+ account); otherwise they fall back to the anonymous watermarked URL — so the embed command never breaks just because you don't have a paid plan.
+
+> **Difference from Option 1**: this modifies your notes (writes `<img src="...">` HTML). The diagram-rendering URL is baked into the markdown itself, so anyone who reads the file — even outside Obsidian — gets the polished render directly from our server. Same marker format as the [`bd` CLI](https://www.npmjs.com/package/@beauty-diagram/cli) and VS Code extension, so all three tools interoperate.
 
 ## Configuration
 
 | Setting | Default | Notes |
 |---|---|---|
-| API key | empty | Optional. Required for share mode and source injection. Without one, preview renders anonymously (watermark, 5 KB source cap). Get one at [beauty-diagram.com/account/api-keys](https://www.beauty-diagram.com/account/api-keys). |
+| API key | empty | Optional. Required for watermark-free preview and for watermark-free embed URLs. Without one, preview renders anonymously (watermark, 5 KB source cap) and the embed command falls back to anonymous URLs. Get one at [beauty-diagram.com/account/api-keys](https://www.beauty-diagram.com/account/api-keys). |
 | Default theme | Classic | One of 9. Per-block directive overrides. |
 | Replace built-in mermaid render | on | Off lets Obsidian render mermaid blocks itself. |
 | Handle plantuml fences | on | Obsidian has no built-in plantuml renderer. |
-| Auto-inject on save | off | When on, every Markdown save runs source injection. |
+| Auto-inject on save | off | When on, every Markdown save runs the embed-share-URLs command. |
 
-The **Verify** button next to the API key field surfaces your current plan and this month's share quota usage — use it before / after enabling share mode to confirm the gating.
+The **Verify** button next to the API key field surfaces your current plan and this month's share quota usage — use it before / after enabling watermark-free preview to confirm the gating.
 
 ## How it compares
 
@@ -150,10 +162,13 @@ The **Verify** button next to the API key field surfaces your current plan and t
 A: Not yet — render runs in Reading View only. Live Preview falls back to Obsidian's built-in. Roadmap.
 
 **Q: Where do my diagrams go?**
-A: Anonymous renders (default) are stateless — the source is encoded directly into the embed URL and rendered on demand. The server doesn't persist anything. Share mode (Pro+ opt-in) saves the source to your Beauty Diagram account so it can be served watermark-free and shared via public URL — that's why it consumes share quota.
+A: Anonymous renders (default) are stateless — the source is encoded directly into the embed URL and rendered on demand. The server doesn't persist anything. Watermark-free preview (Pro+ opt-in) saves the source to your Beauty Diagram account so it can be served watermark-free and shared via public URL — that's why it consumes share quota.
 
 **Q: My Pro key isn't removing the watermark.**
-A: API key alone doesn't auto-enable watermark-free preview — that would silently consume your monthly share quota. Watermark-free is an explicit per-page opt-in: run **Beauty Diagram: Toggle share mode for this page** from the Command Palette. The plugin adds `bd-share: true` to the front-matter and renders that page via the share endpoint. See the [Share mode](#share-mode-pro-per-page-opt-in) section above.
+A: API key alone doesn't auto-enable watermark-free preview — that would silently consume your monthly share quota. Watermark-free is an explicit per-page opt-in: run **Beauty Diagram: Toggle watermark-free preview for this page** from the Command Palette. The plugin adds `bd-share: true` to the front-matter and renders that page via the share endpoint. See [Option 1 — Watermark-free preview](#option-1--watermark-free-preview-for-your-own-viewing-in-obsidian) above.
+
+**Q: I shared a `.md` file with a colleague who doesn't have the plugin — they still see watermarks.**
+A: The toggle command only affects what _you_ see in _your_ Obsidian; the markdown source body is unchanged. To share the polished render with someone who has no plugin, run **Beauty Diagram: Embed share URLs into this note** — that writes `<img>` URLs directly into the file so any standard markdown renderer (GitHub, Notion, blog static sites) will display the same diagram. See [Option 2 — Embed share URLs](#option-2--embed-share-urls-so-anyone-anywhere-sees-the-diagram) above.
 
 **Q: Mobile support?**
 A: Yes. The plugin uses Obsidian's `requestUrl` API which works on iOS / Android. Image cache size is smaller on mobile (200 entries vs 1000 desktop).
@@ -169,8 +184,8 @@ A: Common causes: source > 5 KB without an API key, or your network is blocking 
 **This plugin makes HTTP requests to `api.beauty-diagram.com` by default** to render diagrams. Disclosure:
 
 - **Anonymous render**: every ` ```mermaid ` / ` ```plantuml ` block in Reading View triggers a GET to `/v1/beautify.svg` with the block's source base64url-encoded into the URL query string. The server uses the source to render the SVG and does **not** persist it.
-- **Share mode (per-page opt-in)**: pages with `bd-share: true` in front-matter send their diagrams via POST to `/v1/share` using your API key. The server saves these to your Beauty Diagram account so they can be served as embed URLs (see [privacy policy](https://www.beauty-diagram.com/privacy)). Without the front-matter marker the share endpoint is not called.
-- **Source injection command**: explicit user action via Command Palette. Same `/v1/share` path as share mode but writes the resulting URLs into the markdown file so the diagrams render anywhere markdown is read.
+- **Watermark-free preview (per-page opt-in)**: pages with `bd-share: true` in front-matter send their diagrams via POST to `/v1/share` using your API key. The server saves these to your Beauty Diagram account so they can be served watermark-free (see [privacy policy](https://www.beauty-diagram.com/privacy)). Without the front-matter marker the share endpoint is not called.
+- **Embed share URLs command**: explicit user action via Command Palette. Same `/v1/share` path as the toggle but writes the resulting `<img>` URLs into the markdown file so the diagrams render anywhere markdown is read.
 - **Analytics**: the plugin sends an `X-Bd-Client: obsidian` request header so we can see in aggregate which clients are healthy. No personal data, no telemetry endpoints beyond standard request logs.
 
 ### Opt-out
