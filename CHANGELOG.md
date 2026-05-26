@@ -10,7 +10,7 @@
 
 ### Other
 
-- fix(picker) + fix(inject): live rerender on Set image width + upgrade stale ![]() embeds
+- fix(picker) + fix(inject): live rerender on Set image width + upgrade stale `![]()` embeds
 
 ## 0.1.6 — 2026-05-26
 
