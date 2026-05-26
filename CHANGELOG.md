@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6 — 2026-05-26
+
+### Other
+
+- fix(preview) + feat(inject): recover fence source via getSectionInfo + propagate bd-width into embed URLs
+
 ## 0.1.5 — 2026-05-26
 
 ### Chores
