@@ -387,11 +387,33 @@ export default class BeautyDiagramPlugin extends Plugin {
    */
   async setPageImageWidth(file: TFile, value: ImageWidthValue | null): Promise<void> {
     const original = await this.app.vault.read(file)
-    const updated = setPageWidth(original, value)
-    if (updated === original) {
+    const withFm = setPageWidth(original, value)
+    if (withFm === original) {
       new Notice('Beauty Diagram: image width unchanged.', 3000)
       return
     }
+
+    // Also refresh the inline style on existing embed `<img>` tags so any
+    // previously-published embeds visually match the new bd-width without
+    // the user having to manually re-run "Embed share URLs". refreshOnly
+    // reuses each embed's existing URL verbatim — no fresh share tokens
+    // are minted, no share quota is consumed.
+    const pageWidth = parsePageWidth(withFm)
+    const effectiveWidth = resolveEffectiveWidth(pageWidth, this.settings.defaultImageWidth)
+    const widthStyle = widthToInlineStyle(effectiveWidth)
+    const ownerTag = await shortHash('owner:' + this.settings.apiKey)
+    const updated = await injectEmbeds(withFm, {
+      theme: this.settings.defaultTheme,
+      hasApiKey: !!this.settings.apiKey,
+      apiBase: this.settings.apiBase,
+      widthStyle: widthStyle || null,
+      refreshOnly: true,
+      // refreshOnly never calls shareIdForSource (URL is preserved), so
+      // this resolver is unused — but the interface requires one.
+      shareIdForSource: async (src, theme, sourceFormat: SourceFormat) =>
+        this.cache.get(src, theme, sourceFormat, ownerTag),
+    })
+
     await this.app.vault.modify(file, updated)
     // Force preview re-render — same reason as toggleShareMode (see comment
     // on rerenderPreviewsFor). vault.modify of front-matter alone doesn't
