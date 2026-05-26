@@ -393,6 +393,11 @@ export default class BeautyDiagramPlugin extends Plugin {
       return
     }
     await this.app.vault.modify(file, updated)
+    // Force preview re-render — same reason as toggleShareMode (see comment
+    // on rerenderPreviewsFor). vault.modify of front-matter alone doesn't
+    // re-run the markdown post-processor on an already-open Reading View
+    // because Obsidian's diff layer sees the fence bodies as unchanged.
+    this.rerenderPreviewsFor(file)
     new Notice(
       value === null
         ? 'Beauty Diagram: removed bd-width override.'
