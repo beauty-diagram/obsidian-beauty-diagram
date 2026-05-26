@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.9 — 2026-05-26
+
+### Chores
+
+- **release**: escape \![]() in CHANGELOG defensively
+
+### Other
+
+- fix(picker) + fix(embed): auto-refresh existing embeds + display:block + rescale presets
+
 ## 0.1.8 — 2026-05-26
 
 ### Features
