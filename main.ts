@@ -8,7 +8,10 @@ import { injectEmbeds, cleanEmbeds } from './src/injection'
 import { parsePageMode, setPageShareMode } from './src/share-mode'
 import {
   IMAGE_WIDTH_PRESETS,
+  parsePageWidth,
+  resolveEffectiveWidth,
   setPageWidth,
+  widthToInlineStyle,
   type ImageWidthValue,
 } from './src/image-width'
 import { UsageCache } from './src/usage-cache'
@@ -98,6 +101,17 @@ export default class BeautyDiagramPlugin extends Plugin {
             if (/^\s*(flowchart|sequenceDiagram|classDiagram|erDiagram|stateDiagram|gantt|pie|gitGraph|mindmap|xychart|journey|timeline)/i.test(raw)) {
               source = raw
             }
+          }
+
+          // Path C: recover from the markdown section info. Once Obsidian's
+          // built-in mermaid has rendered the fence to <svg>, the original
+          // source is no longer in the DOM at all — neither attribute nor
+          // textContent has it. ctx.getSectionInfo() returns the surrounding
+          // markdown text + line range, from which we can extract the fence
+          // body. This is the most robust recovery and covers the modern
+          // Obsidian builds where mermaid pre-renders before our processor.
+          if (!source) {
+            source = recoverFenceSourceFromSection(div, ctx) ?? ''
           }
 
           if (!source) continue
@@ -314,10 +328,22 @@ export default class BeautyDiagramPlugin extends Plugin {
     // and the handler equivalent. Without this two accounts on the same
     // machine would alias each other's share tokens.
     const ownerTag = await shortHash('owner:' + this.settings.apiKey)
+
+    // Resolve bd-width for this file the same way the preview renderer does
+    // (front-matter override → vault default → 'full'), then convert to an
+    // inline style. The injector switches to `<img>` form when a non-empty
+    // style is returned so the bd-width override survives outside Obsidian
+    // (GitHub render, Notion paste, etc.). When `widthStyle` is empty the
+    // injector keeps the markdown-image `![]()` form for parity with CLI.
+    const pageWidth = parsePageWidth(original)
+    const effectiveWidth = resolveEffectiveWidth(pageWidth, this.settings.defaultImageWidth)
+    const widthStyle = widthToInlineStyle(effectiveWidth)
+
     const updated = await injectEmbeds(original, {
       theme: this.settings.defaultTheme,
       hasApiKey: !!this.settings.apiKey,
       apiBase: this.settings.apiBase,
+      widthStyle: widthStyle || null,
       shareIdForSource: async (src, theme, sourceFormat: SourceFormat) => {
         const cached = await this.cache.get(src, theme, sourceFormat, ownerTag)
         if (cached) return cached
@@ -384,6 +410,43 @@ export default class BeautyDiagramPlugin extends Plugin {
 // its own "Switch theme" / "Switch language" commands; users get a
 // familiar look + arrow-key navigation + fuzzy search.
 // ---------------------------------------------------------------------------
+
+/**
+ * Recover a fenced code block's source by asking the post-processor context
+ * for the markdown section that produced this DOM element. Walks up the
+ * parent chain (the `.mermaid` div itself may not be a recognized section
+ * boundary in Obsidian's index, but its `.el-pre` parent usually is) and
+ * returns the inner content of the surrounding fence (or null if no fenced
+ * section can be located).
+ *
+ * Needed because Obsidian's built-in mermaid renderer fully replaces the
+ * `<pre><code class="language-mermaid">` markup with `<div class="mermaid">
+ * <svg>...</svg></div>` BEFORE our post-processor runs, even at sortOrder
+ * -10000. The original source text is no longer in the DOM at all.
+ */
+function recoverFenceSourceFromSection(
+  el: HTMLElement,
+  ctx: import('obsidian').MarkdownPostProcessorContext,
+): string | null {
+  let candidate: HTMLElement | null = el
+  // Cap at 5 to avoid runaway traversal in unusual nestings.
+  for (let depth = 0; candidate && depth < 5; depth++) {
+    const info = ctx.getSectionInfo(candidate)
+    if (info) {
+      const lines = info.text.split('\n').slice(info.lineStart, info.lineEnd + 1)
+      if (lines.length < 2) return null
+      const first = lines[0].trim()
+      const last = lines[lines.length - 1].trim()
+      const isFence =
+        (first.startsWith('```') || first.startsWith('~~~')) &&
+        (last === '```' || last === '~~~')
+      if (!isFence) return null
+      return lines.slice(1, -1).join('\n')
+    }
+    candidate = candidate.parentElement
+  }
+  return null
+}
 
 type WidthChoice =
   | { kind: 'preset'; label: string; value: ImageWidthValue }
