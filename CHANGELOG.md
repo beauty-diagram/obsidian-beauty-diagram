@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.5 — 2026-05-26
+
+### Chores
+
+- gitignore local CLAUDE.md agent-notes file
+
+### Other
+
+- rename commands + soft-fallback for missing API key in share mode
+
 ## 0.1.4 — 2026-05-22
 
 ### Added
