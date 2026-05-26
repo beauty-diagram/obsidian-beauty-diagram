@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.10 — 2026-05-26
+
+### Fixes
+
+- **inject**: preserve newline between marker close and next fence on refresh
+
 ## 0.1.9 — 2026-05-26
 
 ### Chores
