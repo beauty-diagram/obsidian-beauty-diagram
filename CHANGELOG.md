@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11 — 2026-05-26
+
+### Other
+
+- style(properties): hide all bd-* rows in Obsidian Properties pane
+
 ## 0.1.10 — 2026-05-26
 
 ### Fixes
