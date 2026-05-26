@@ -83,16 +83,19 @@
   margin-right: 6px;
 }
 
-/* Hide the internal `bd-share` property row in Obsidian's Properties pane.
- * The marker is plugin-managed (written/removed by "Toggle share mode"
- * command) — surfacing it as an editable chip in the Properties UI risks
- * users hand-toggling it, which bypasses the plan-check gating + share-
- * token pre-fetch the command does. Same intent as the VS Code extension's
- * front_matter renderer suppression.
+/* Hide Beauty Diagram's internal front-matter property rows in Obsidian's
+ * Properties pane. These markers are plugin-managed (written/removed by
+ * the picker / toggle commands) — surfacing them as editable chips in
+ * the Properties UI risks users hand-toggling values, which bypasses the
+ * command's gating + side effects (plan check, embed refresh, share-
+ * token pre-fetch). Same intent as the VS Code extension's previewScript
+ * row suppression.
  *
  * Obsidian assigns each property row a `data-property-key` attribute
- * matching the YAML key, so a single selector hits both the inline
- * editing UI and the read-view Properties section. */
-.metadata-property[data-property-key="bd-share"] {
+ * matching the YAML key, so an attribute-prefix selector hits every
+ * `bd-*` key (current: `bd-share`, `bd-width`; future-proof for new
+ * markers without code changes) in both the inline editing UI and the
+ * read-view Properties section. */
+.metadata-property[data-property-key^="bd-"] {
   display: none;
 }
