@@ -83,6 +83,42 @@
   margin-right: 6px;
 }
 
+/* Per-block native-renderer fallback. The badge is a visible-by-default
+ * status indicator (unlike .bd-edit-badge's hover reveal) — a silently
+ * un-beautified diagram would read as "the plugin is broken". */
+.bd-fallback-badge {
+  margin-top: 4px;
+  font-size: 0.78em;
+}
+
+.bd-fallback-toggle {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--text-warning, #b58a00);
+  opacity: 0.8;
+  font-size: inherit;
+}
+
+.bd-fallback-toggle:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.bd-fallback-info {
+  border-left: 2px solid var(--background-modifier-border, #ccc);
+  margin: 4px 0 0 6px;
+  padding: 4px 8px;
+  color: var(--text-muted, #888);
+}
+
+.bd-fallback-reason {
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+}
+
 /* Hide Beauty Diagram's internal front-matter property rows in Obsidian's
  * Properties pane. These markers are plugin-managed (written/removed by
  * the picker / toggle commands) — surfacing them as editable chips in

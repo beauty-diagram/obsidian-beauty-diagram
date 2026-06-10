@@ -1,4 +1,10 @@
-import { MarkdownPostProcessorContext } from 'obsidian'
+import {
+  App,
+  MarkdownPostProcessorContext,
+  MarkdownRenderChild,
+  MarkdownRenderer,
+  requestUrl,
+} from 'obsidian'
 import { composeUrl } from './url-composer'
 import { parseDirective } from './directives'
 import { ShareCache } from './share-cache'
@@ -10,6 +16,7 @@ import type { PageMode, SourceFormat } from './types'
 import { editorLink } from './editor-link'
 
 export interface HandlerDeps {
+  app: App
   settings: BeautyDiagramSettings
   cache: ShareCache
   /**
@@ -60,16 +67,33 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
       return
     }
 
+    const canFallbackNative =
+      sourceFormat === 'mermaid' && deps.settings.fallbackToNativeRenderer
+
     let url: string
     try {
       url = await resolveUrl(cleanSource, theme, sourceFormat, mode, deps, bg)
     } catch (err) {
+      // Pre-image failures (createShare network error, over-size-cap, …):
+      // same per-block degradation as a failed <img> load.
+      if (canFallbackNative) {
+        const msg = err instanceof ApiError ? err.message : (err as Error).message ?? 'Unknown error'
+        const ok = await renderNativeFallback(el, cleanSource, theme, ctx, deps, { reason: msg })
+        if (ok) return
+        el.empty()
+      }
       renderError(el, err, deps, sourceFormat)
       return
     }
 
+    // Preview-only opt-in: ask the server to answer render failures with a
+    // non-2xx status instead of its HTTP-200 placeholder SVG, so unsupported
+    // syntax (e.g. C4) fires <img onerror> exactly like a transport failure.
+    // Never baked into note source — injection.ts composes its own URLs.
+    const previewUrl = withFailStatus(url)
+
     const imgAttrs: Record<string, string> = {
-      src: url,
+      src: previewUrl,
       alt: firstNonEmptyLine(cleanSource),
       loading: deps.settings.lazyLoadImages ? 'lazy' : 'eager',
       'data-bd-source-format': sourceFormat,
@@ -79,9 +103,18 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
     img.addClass('bd-img')
 
     img.addEventListener('error', () => {
-      const err = new ApiError(0, 'image_load_failed', 'Image failed to load')
-      el.empty()
-      renderError(el, err, deps, sourceFormat)
+      void (async () => {
+        el.empty()
+        if (canFallbackNative) {
+          const ok = await renderNativeFallback(el, cleanSource, theme, ctx, deps, {
+            probeUrl: previewUrl,
+          })
+          if (ok) return
+          el.empty()
+        }
+        const err = new ApiError(0, 'image_load_failed', 'Image failed to load')
+        renderError(el, err, deps, sourceFormat)
+      })()
     })
 
     // Sibling overlay badge — sits absolutely over the bottom-right of the
@@ -155,6 +188,94 @@ async function resolveUrl(
   await deps.cache.set(source, theme, sourceFormat, share.shareToken, ownerTag)
   const base = `${deps.settings.apiBase}/v1/share/${share.shareToken}.svg`
   return bg === 'transparent' ? `${base}?bg=transparent` : base
+}
+
+function withFailStatus(url: string): string {
+  return url + (url.includes('?') ? '&' : '?') + 'onfail=status'
+}
+
+/**
+ * Per-block fallback to Obsidian's built-in mermaid renderer, with a status
+ * badge explaining why Beauty Diagram didn't render this block. Returns false
+ * when the native render itself throws (caller falls through to the error box).
+ *
+ * Reason resolution is lazy: `opts.reason` is shown directly when the failure
+ * happened before the <img> existed (createShare error — message already known);
+ * otherwise `opts.probeUrl` is fetched on first badge expand to read the
+ * server's X-Beauty-Render-Reason header. Zero extra requests unless the user
+ * actually asks why.
+ */
+async function renderNativeFallback(
+  el: HTMLElement,
+  source: string,
+  theme: string,
+  ctx: MarkdownPostProcessorContext,
+  deps: HandlerDeps,
+  opts: { reason?: string; probeUrl?: string },
+): Promise<boolean> {
+  try {
+    const host = el.createDiv({ cls: 'bd-native-fallback' })
+    const child = new MarkdownRenderChild(host)
+    ctx.addChild(child)
+    await MarkdownRenderer.render(
+      deps.app,
+      '```mermaid\n' + source + '\n```',
+      host,
+      ctx.sourcePath,
+      child,
+    )
+
+    const badge = el.createDiv({ cls: 'bd-fallback-badge' })
+    const toggle = badge.createEl('button', {
+      cls: 'bd-fallback-toggle',
+      text: "⚠ Rendered by Obsidian's built-in renderer",
+      attr: { 'aria-expanded': 'false' },
+    })
+    const info = badge.createDiv({ cls: 'bd-fallback-info' })
+    info.style.display = 'none'
+    const reasonEl = info.createDiv({
+      cls: 'bd-fallback-reason',
+      text: opts.reason ?? 'Checking why Beauty Diagram could not render this block…',
+    })
+    info.createEl('a', {
+      attr: {
+        href: editorLink({ source, theme, sourceFormat: 'mermaid' }),
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
+      text: '↗ Open in editor',
+    })
+
+    let probed = false
+    toggle.onclick = () => {
+      const opening = info.style.display === 'none'
+      info.style.display = opening ? '' : 'none'
+      toggle.setAttribute('aria-expanded', String(opening))
+      if (opening && !probed && !opts.reason && opts.probeUrl) {
+        probed = true
+        void fetchFailureReason(opts.probeUrl).then((reason) => reasonEl.setText(reason))
+      }
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function fetchFailureReason(url: string): Promise<string> {
+  try {
+    const resp = await requestUrl({ url, throw: false })
+    if (resp.status >= 400) {
+      const reason =
+        resp.headers['x-beauty-render-reason'] ?? resp.headers['X-Beauty-Render-Reason']
+      return reason
+        ? `Beauty Diagram could not render this source: ${reason}`
+        : `Beauty Diagram could not render this source (HTTP ${resp.status}).`
+    }
+    return 'Beauty Diagram is reachable again — this was likely a temporary network issue. Reopen the note to retry.'
+  } catch {
+    return 'Beauty Diagram service is unreachable — the diagram will render once your connection is restored.'
+  }
 }
 
 function renderError(el: HTMLElement, err: unknown, deps: HandlerDeps, sourceFormat: SourceFormat) {

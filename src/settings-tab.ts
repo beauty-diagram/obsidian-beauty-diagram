@@ -101,6 +101,18 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       )
 
     new Setting(containerEl)
+      .setName('Fall back to built-in renderer on failure')
+      .setDesc(
+        'When Beauty Diagram cannot render a mermaid block (unsupported syntax, service unreachable), render that block with Obsidian\'s built-in renderer instead of showing an error box. A badge on the block explains why.',
+      )
+      .addToggle((tg) =>
+        tg.setValue(this.plugin.settings.fallbackToNativeRenderer).onChange(async (v) => {
+          this.plugin.settings.fallbackToNativeRenderer = v
+          await this.plugin.saveSettings()
+        })
+      )
+
+    new Setting(containerEl)
       .setName('Handle plantuml fences')
       .setDesc('Obsidian has no built-in PlantUML rendering. Off leaves fences as plain text.')
       .addToggle((tg) =>

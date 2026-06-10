@@ -58,6 +58,7 @@ export default class BeautyDiagramPlugin extends Plugin {
     // instead of latching to the onload-time instance (which would silently
     // call /v1/share with stale credentials and produce the wrong plan tier).
     const handlerDeps = {
+      app: this.app,
       settings: this.settings,
       cache: this.cache,
       getApi: () => this.api,
@@ -71,6 +72,10 @@ export default class BeautyDiagramPlugin extends Plugin {
         // Path A: catch raw pre>code BEFORE built-in renders
         const codes = Array.from(el.querySelectorAll<HTMLElement>('pre > code.language-mermaid'))
         for (const code of codes) {
+          // Never re-capture fences rendered by our own per-block native
+          // fallback (codeblock-handler renders them inside .bd-block) —
+          // doing so would loop: handler → native fallback → handler → …
+          if (code.closest('.bd-block')) continue
           const source = code.textContent ?? ''
           const pre = code.parentElement
           if (!pre) continue

@@ -9,6 +9,10 @@ export interface BeautyDiagramSettings {
   defaultImageWidth: string
   replaceMermaid: boolean
   handlePlantuml: boolean
+  /** When a mermaid block fails to render server-side (unsupported syntax,
+   *  service unreachable), fall back to Obsidian's built-in mermaid renderer
+   *  for that block instead of showing an error box. */
+  fallbackToNativeRenderer: boolean
   lazyLoadImages: boolean
   autoInjectOnSave: boolean
 }
@@ -20,6 +24,7 @@ export const DEFAULT_SETTINGS: BeautyDiagramSettings = {
   defaultImageWidth: 'full',
   replaceMermaid: true,
   handlePlantuml: true,
+  fallbackToNativeRenderer: true,
   lazyLoadImages: true,
   autoInjectOnSave: false,
 }
