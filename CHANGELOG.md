@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.12 — 2026-06-10
+
+### Features
+
+- per-block fallback to Obsidian's built-in mermaid renderer on render failure
+
 ## 0.1.11 — 2026-05-26
 
 ### Other
