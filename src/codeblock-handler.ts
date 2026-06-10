@@ -6,7 +6,7 @@ import {
   requestUrl,
 } from 'obsidian'
 import { composeUrl } from './url-composer'
-import { parseDirective } from './directives'
+import { isExcluded, parseDirective } from './directives'
 import { ShareCache } from './share-cache'
 import { ApiClient, ApiError } from './api-client'
 import { shortHash } from './hash'
@@ -64,6 +64,15 @@ export function makeHandler(sourceFormat: SourceFormat, deps: HandlerDeps) {
 
     if (!cleanSource.trim()) {
       el.createDiv({ cls: 'bd-error', text: 'Empty diagram' })
+      return
+    }
+
+    // `%% bd:exclude` — the user opted this block out of Beauty Diagram.
+    // Render via Obsidian's native pipeline, no badge (this is a deliberate
+    // choice, not a failure). The bd-block class on `el` keeps main.ts's
+    // re-entry guards from re-capturing the nested fence.
+    if (isExcluded(overrides)) {
+      await renderHostNative(el, cleanSource, sourceFormat, ctx, deps)
       return
     }
 
@@ -194,6 +203,29 @@ function withFailStatus(url: string): string {
   return url + (url.includes('?') ? '&' : '?') + 'onfail=status'
 }
 
+/** Render a fence through Obsidian's own markdown pipeline (built-in mermaid
+ *  for mermaid blocks, plain code block for formats Obsidian can't render).
+ *  Lifecycle is tied to the post-processor context via MarkdownRenderChild. */
+async function renderHostNative(
+  el: HTMLElement,
+  source: string,
+  sourceFormat: SourceFormat,
+  ctx: MarkdownPostProcessorContext,
+  deps: HandlerDeps,
+): Promise<HTMLElement> {
+  const host = el.createDiv({ cls: 'bd-native-fallback' })
+  const child = new MarkdownRenderChild(host)
+  ctx.addChild(child)
+  await MarkdownRenderer.render(
+    deps.app,
+    '```' + sourceFormat + '\n' + source + '\n```',
+    host,
+    ctx.sourcePath,
+    child,
+  )
+  return host
+}
+
 /**
  * Per-block fallback to Obsidian's built-in mermaid renderer, with a status
  * badge explaining why Beauty Diagram didn't render this block. Returns false
@@ -214,16 +246,7 @@ async function renderNativeFallback(
   opts: { reason?: string; probeUrl?: string },
 ): Promise<boolean> {
   try {
-    const host = el.createDiv({ cls: 'bd-native-fallback' })
-    const child = new MarkdownRenderChild(host)
-    ctx.addChild(child)
-    await MarkdownRenderer.render(
-      deps.app,
-      '```mermaid\n' + source + '\n```',
-      host,
-      ctx.sourcePath,
-      child,
-    )
+    await renderHostNative(el, source, 'mermaid', ctx, deps)
 
     const badge = el.createDiv({ cls: 'bd-fallback-badge' })
     const toggle = badge.createEl('button', {

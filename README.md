@@ -88,7 +88,19 @@ flowchart LR
 ```
 ````
 
-Supported keys: `theme` (any of the 9 themes), `bg` (`transparent` only). Directive lines are consumed by the plugin and stripped before rendering.
+Supported keys: `theme` (any of the 9 themes), `bg` (`transparent` only), `exclude`. Directive lines are consumed by the plugin and stripped before rendering.
+
+### Opting a block out entirely
+
+Prefer Obsidian's own rendering for a specific diagram? Add `%% bd:exclude` and the plugin leaves that block to the built-in renderer — no Beauty Diagram request, and the "Embed share URLs" commands skip it (removing any embed they previously added):
+
+````md
+```mermaid
+%% bd:exclude
+gantt
+  title I like the native gantt
+```
+````
 
 ### Two ways to go watermark-free
 
