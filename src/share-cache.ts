@@ -38,7 +38,7 @@ export class ShareCache {
           }
         }
         req.onsuccess = () => resolve(req.result)
-        req.onerror = () => reject(req.error)
+        req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'))
       })
     }
     return this.dbPromise
@@ -78,7 +78,7 @@ export class ShareCache {
         if (row.expiresAt < Date.now()) return resolve(null)
         resolve(row.id)
       }
-      req.onerror = () => reject(req.error)
+      req.onerror = () => reject(req.error ?? new Error('IndexedDB read failed'))
     })
   }
 
@@ -97,7 +97,7 @@ export class ShareCache {
       const tx = db.transaction('share-cache', 'readwrite')
       tx.objectStore('share-cache').put(row)
       tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error)
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
     })
     await this.evictIfFull()
   }
@@ -123,7 +123,7 @@ export class ShareCache {
         }
       }
       tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error)
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
     })
   }
 
@@ -133,7 +133,7 @@ export class ShareCache {
       const tx = db.transaction('share-cache', 'readwrite')
       tx.objectStore('share-cache').clear()
       tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error)
+      tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'))
     })
   }
 }

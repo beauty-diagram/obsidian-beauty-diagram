@@ -50,8 +50,8 @@ export async function injectEmbeds(markdown: string, opts: InjectOptions): Promi
   for (const m of markdown.matchAll(FENCE_RE)) {
     const leadOffset = m[1] ? 1 : 0
     fences.push({
-      startIdx: m.index! + leadOffset,
-      endIdx: m.index! + m[0].length,
+      startIdx: m.index + leadOffset,
+      endIdx: m.index + m[0].length,
       type: m[2] as SourceFormat,
       source: m[3],
     })
@@ -152,9 +152,7 @@ export async function injectEmbeds(markdown: string, opts: InjectOptions): Promi
     const block = `\n\n<!-- bd:inline-img hash=${hash} -->\n${inner}\n<!-- /bd:inline-img -->`
 
     if (markerMatch) {
-      // Replace stale marker block (preserve the leading newlines before the marker)
-      const markerStartInAfter = markerMatch[1].length // skip leading newlines
-      const markerLen = markerMatch[2].length + (markerMatch[0].endsWith('\n') ? 1 : 0)
+      // Replace stale marker block (preserve the leading newlines before the marker).
       // markerMatch[0] is: leadingNewlines + marker block + optional trailing newline
       out =
         out.slice(0, f.endIdx) +
@@ -210,7 +208,7 @@ export async function cleanEmbeds(markdown: string): Promise<string> {
   for (const m of markdown.matchAll(markerRe)) {
     const block = m[1]
     // blockStart is the index in markdown where the block itself starts (excluding leading \n)
-    const blockStart = m.index! + (m[0].length - block.length)
+    const blockStart = m.index + (m[0].length - block.length)
     const before = markdown.slice(0, blockStart)
     const trimmedBefore = before.trimEnd()
     const hasFence = trimmedBefore.endsWith('```')

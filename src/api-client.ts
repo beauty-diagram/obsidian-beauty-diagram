@@ -129,12 +129,9 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
     }
 
     if (res.status < 200 || res.status >= 300) {
-      const code =
-        data && typeof data === 'object' && 'error' in data ? (data as any).error : 'unknown'
-      const message =
-        data && typeof data === 'object' && 'message' in data
-          ? (data as any).message
-          : `HTTP ${res.status}`
+      const errBody = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>
+      const code = typeof errBody.error === 'string' ? errBody.error : 'unknown'
+      const message = typeof errBody.message === 'string' ? errBody.message : `HTTP ${res.status}`
       throw new ApiError(res.status, code, message)
     }
     return data as T

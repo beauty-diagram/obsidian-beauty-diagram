@@ -1,5 +1,5 @@
-import { MarkdownView, Notice, Platform, Plugin, SuggestModal, TFile } from 'obsidian'
-import { BeautyDiagramSettings, DEFAULT_SETTINGS, loadSettings, saveSettings } from './src/settings'
+import { App, MarkdownView, Modal, Notice, Platform, Plugin, SuggestModal, TFile } from 'obsidian'
+import { BeautyDiagramSettings, loadSettings, saveSettings } from './src/settings'
 import { BeautyDiagramSettingTab } from './src/settings-tab'
 import { ShareCache } from './src/share-cache'
 import { createApiClient, ApiClient } from './src/api-client'
@@ -79,7 +79,9 @@ export default class BeautyDiagramPlugin extends Plugin {
           const source = code.textContent ?? ''
           const pre = code.parentElement
           if (!pre) continue
-          const container = document.createElement('div')
+          // ownerDocument, not the global `document` — the note may live in a
+          // popout window whose DOM is a different Document instance.
+          const container = pre.ownerDocument.createElement('div')
           pre.replaceWith(container)
           await mermaidHandler(source, container, ctx)
         }
@@ -93,10 +95,7 @@ export default class BeautyDiagramPlugin extends Plugin {
           if (div.querySelector('.bd-img') || div.closest('.bd-block')) continue
 
           // Try multiple ways to recover the source
-          let source =
-            div.getAttribute('data-source') ??
-            (div as any).dataset?.source ??
-            ''
+          let source = div.getAttribute('data-source') ?? div.dataset.source ?? ''
 
           // Fall back to the textContent of the div if it still contains raw text
           // (some Obsidian versions leave the source as a child text node)
@@ -121,7 +120,7 @@ export default class BeautyDiagramPlugin extends Plugin {
 
           if (!source) continue
 
-          const container = document.createElement('div')
+          const container = div.ownerDocument.createElement('div')
           div.replaceWith(container)
           await mermaidHandler(source, container, ctx)
         }
@@ -159,7 +158,7 @@ export default class BeautyDiagramPlugin extends Plugin {
         const file = this.app.workspace.getActiveFile()
         if (!file || file.extension !== 'md') return false
         if (!checking) {
-          this.toggleShareMode(file)
+          void this.toggleShareMode(file)
         }
         return true
       },
@@ -304,7 +303,7 @@ export default class BeautyDiagramPlugin extends Plugin {
 
   async runInjectionVault() {
     const files = this.app.vault.getMarkdownFiles()
-    if (!confirm(`Embed share URLs into ${files.length} Markdown files?`)) return
+    if (!(await confirmModal(this.app, `Embed share URLs into ${files.length} Markdown files?`))) return
     let touched = 0
     for (const f of files) {
       if (await this.injectFile(f)) touched++
@@ -314,7 +313,7 @@ export default class BeautyDiagramPlugin extends Plugin {
 
   async runCleanVault() {
     const files = this.app.vault.getMarkdownFiles()
-    if (!confirm(`Clean orphan embed URLs in ${files.length} Markdown files?`)) return
+    if (!(await confirmModal(this.app, `Clean orphan embed URLs in ${files.length} Markdown files?`))) return
     let touched = 0
     for (const f of files) {
       const original = await this.app.vault.read(f)
@@ -372,7 +371,9 @@ export default class BeautyDiagramPlugin extends Plugin {
   private detectConflicts() {
     // Spec §10 #5: warn once when known conflicting plugins are enabled.
     const conflicts = ['obsidian-plantuml', 'mermaid-plus']
-    const enabled = (this.app as any).plugins?.enabledPlugins as Set<string> | undefined
+    // `app.plugins` is undocumented API — typed structurally instead of `any`.
+    const appWithPlugins = this.app as unknown as { plugins?: { enabledPlugins?: Set<string> } }
+    const enabled = appWithPlugins.plugins?.enabledPlugins
     if (!enabled) return
     for (const id of conflicts) {
       if (enabled.has(id)) {
@@ -514,8 +515,46 @@ class ImageWidthPickerModal extends SuggestModal<WidthChoice> {
     el.createEl('div', { text: choice.label })
   }
 
-  async onChooseSuggestion(choice: WidthChoice): Promise<void> {
+  onChooseSuggestion(choice: WidthChoice): void {
     const value = choice.kind === 'preset' ? choice.value : null
-    await this.plugin.setPageImageWidth(this.file, value)
+    void this.plugin.setPageImageWidth(this.file, value)
   }
+}
+
+/**
+ * Promise-based replacement for `window.confirm` (which the Obsidian plugin
+ * guidelines forbid — it blocks the renderer process and looks foreign).
+ * Resolves true only when the user clicks Continue; dismissing the modal
+ * any other way (Esc, click-outside, Cancel) resolves false.
+ */
+class ConfirmModal extends Modal {
+  private confirmed = false
+
+  constructor(
+    app: App,
+    private readonly message: string,
+    private readonly onResolve: (ok: boolean) => void,
+  ) {
+    super(app)
+  }
+
+  onOpen() {
+    this.contentEl.createEl('p', { text: this.message })
+    const buttons = this.contentEl.createDiv({ cls: 'modal-button-container' })
+    const ok = buttons.createEl('button', { text: 'Continue', cls: 'mod-cta' })
+    ok.onclick = () => {
+      this.confirmed = true
+      this.close()
+    }
+    buttons.createEl('button', { text: 'Cancel' }).onclick = () => this.close()
+  }
+
+  onClose() {
+    this.contentEl.empty()
+    this.onResolve(this.confirmed)
+  }
+}
+
+function confirmModal(app: App, message: string): Promise<boolean> {
+  return new Promise((resolve) => new ConfirmModal(app, message, resolve).open())
 }

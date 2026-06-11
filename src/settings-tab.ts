@@ -13,7 +13,7 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
     containerEl.empty()
 
     // —— Authentication ——
-    containerEl.createEl('h2', { text: 'Authentication' })
+    new Setting(containerEl).setName('Authentication').setHeading()
 
     new Setting(containerEl)
       .setName('API key')
@@ -52,7 +52,7 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       )
 
     // —— Rendering ——
-    containerEl.createEl('h2', { text: 'Rendering' })
+    new Setting(containerEl).setName('Rendering').setHeading()
 
     new Setting(containerEl)
       .setName('Default theme')
@@ -134,10 +134,9 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       )
 
     // —— Watermark-free preview ——
-    containerEl.createEl('h2', { text: 'Watermark-free preview (Pro+)' })
+    new Setting(containerEl).setName('Watermark-free preview (Pro+)').setHeading()
 
-    const shareDesc = containerEl.createDiv({ cls: 'setting-item-description' })
-    shareDesc.style.marginBottom = '0.75em'
+    const shareDesc = containerEl.createDiv({ cls: 'setting-item-description bd-setting-note' })
     shareDesc.createSpan({
       text:
         'For your own viewing only. By default every diagram renders via the anonymous endpoint with a watermark. ' +
@@ -156,8 +155,7 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
         'This only affects what YOU see in your own Obsidian — collaborators reading the markdown elsewhere still see the watermarked anonymous render. To share watermark-free with others, use the embed command below.',
     })
 
-    const quotaHint = containerEl.createDiv({ cls: 'setting-item-description' })
-    quotaHint.style.marginBottom = '1em'
+    const quotaHint = containerEl.createDiv({ cls: 'setting-item-description bd-setting-note-lg' })
     quotaHint.createSpan({ text: 'Check current quota usage at ' })
     quotaHint.createEl('a', {
       text: 'beauty-diagram.com/account/usage',
@@ -168,10 +166,9 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
     quotaHint.createSpan({ text: ' above to see your plan and current month usage).' })
 
     // —— Embed share URLs (for external readers) ——
-    containerEl.createEl('h2', { text: 'Embed share URLs (for external readers)' })
+    new Setting(containerEl).setName('Embed share URLs (for external readers)').setHeading()
 
-    const embedDesc = containerEl.createDiv({ cls: 'setting-item-description' })
-    embedDesc.style.marginBottom = '0.75em'
+    const embedDesc = containerEl.createDiv({ cls: 'setting-item-description bd-setting-note' })
     embedDesc.createSpan({
       text:
         'Bakes a Beauty Diagram share URL into the markdown next to every fence, so anyone who reads the note ' +
@@ -210,7 +207,7 @@ export class BeautyDiagramSettingTab extends PluginSettingTab {
       )
 
     // —— Advanced ——
-    containerEl.createEl('h2', { text: 'Advanced' })
+    new Setting(containerEl).setName('Advanced').setHeading()
 
     new Setting(containerEl)
       .setName('API base URL')

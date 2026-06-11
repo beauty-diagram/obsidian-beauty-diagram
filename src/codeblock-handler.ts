@@ -254,8 +254,7 @@ async function renderNativeFallback(
       text: "⚠ Rendered by Obsidian's built-in renderer",
       attr: { 'aria-expanded': 'false' },
     })
-    const info = badge.createDiv({ cls: 'bd-fallback-info' })
-    info.style.display = 'none'
+    const info = badge.createDiv({ cls: 'bd-fallback-info bd-hidden' })
     const reasonEl = info.createDiv({
       cls: 'bd-fallback-reason',
       text: opts.reason ?? 'Checking why Beauty Diagram could not render this block…',
@@ -271,8 +270,8 @@ async function renderNativeFallback(
 
     let probed = false
     toggle.onclick = () => {
-      const opening = info.style.display === 'none'
-      info.style.display = opening ? '' : 'none'
+      const opening = info.hasClass('bd-hidden')
+      info.toggleClass('bd-hidden', !opening)
       toggle.setAttribute('aria-expanded', String(opening))
       if (opening && !probed && !opts.reason && opts.probeUrl) {
         probed = true
@@ -315,7 +314,7 @@ function renderError(el: HTMLElement, err: unknown, deps: HandlerDeps, sourceFor
   const actions = box.createDiv({ cls: 'bd-error-actions' })
   if (sourceFormat === 'mermaid') {
     const btn = actions.createEl('button', { text: "Use Obsidian's built-in renderer" })
-    btn.onclick = () => { deps.disableForFormat('mermaid') }
+    btn.onclick = () => { void deps.disableForFormat('mermaid') }
   }
 }
 

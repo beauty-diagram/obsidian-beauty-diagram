@@ -135,3 +135,20 @@
 .metadata-property[data-property-key^="bd-"] {
   display: none;
 }
+
+/* Generic hide toggle — replaces inline `style.display` assignments
+ * (forbidden by the community plugin guideline no-static-styles-assignment).
+ * Used by the fallback badge's collapsible info panel. */
+.bd-hidden {
+  display: none;
+}
+
+/* Spacing for the free-standing description paragraphs in the settings tab
+ * (the heading-level explanations that aren't attached to a Setting row). */
+.bd-setting-note {
+  margin-bottom: 0.75em;
+}
+
+.bd-setting-note-lg {
+  margin-bottom: 1em;
+}
