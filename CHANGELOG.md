@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.14 — 2026-06-11
+
+### Fixes
+
+- resolve community plugin scanner findings
+
 ## 0.1.13 — 2026-06-10
 
 ### Features
